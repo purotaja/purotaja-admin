@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  ADMIN
+  USER
+}
+
+enum LabelType {
+  HOME
+  WORK
+  OTHER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  DELIVERED
+}
+
+model Client {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  email      String  @unique
+  phone      String  @unique
+  isVerified Boolean @default(false)
+
+  otp     Otp[]
+  address Address[]
+  orders  Orders[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Address {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  address    String
+  street     String
+  appartment String
+  postalCode String
+  isDefault  Boolean   @default(false)
+  label      LabelType
+
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String? @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Orders Orders[]
+}
+
+model Otp {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  otp       String
+  createdAt DateTime @default(now())
+
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String? @db.ObjectId
+}
+
+model User {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  email   String   @unique
+  name    String
+  role    UserType @default(USER)
+  clerkId String   @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Store {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  label String @unique
+  value String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Image {
+  id  String @id @default(auto()) @map("_id") @db.ObjectId
+  url String
+  key String
+
+  categoryId    String? @db.ObjectId
+  subcategoryId String? @db.ObjectId
+  productId     String? @db.ObjectId
+
+  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  subcategory Subcategory? @relation(fields: [subcategoryId], references: [id], onDelete: Cascade)
+  product     Product?     @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+
+  image   Image[]
+  product Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subcategory {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+
+  image Image[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  price       Float
+  stock       Int
+  discount    Float?
+  image       Image[]
+
+  subcategories Json[]
+
+  categoryId String   @db.ObjectId
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Orders {
+  id       String      @id @default(auto()) @map("_id") @db.ObjectId
+  amount   Float
+  status   OrderStatus @default(PENDING)
+  products Json[]
+  address  Address?    @relation(fields: [addressId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  client   Client? @relation(fields: [clientId], references: [id])
+  clientId String? @db.ObjectId
+
+  addressId String? @db.ObjectId
+}
