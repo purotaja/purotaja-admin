@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 import { ContentLayout } from "@/components/admin-panel/content-layout";
 import {
   Breadcrumb,
@@ -9,7 +9,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
-import Category from '../../_components/categories/Category';
+import Orders from "../../_components/orders/Orders";
 
 const Page = () => {
   return (
@@ -27,9 +27,9 @@ const Page = () => {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <Category />
+      <Orders />
     </ContentLayout>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

@@ -1,5 +1,6 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-import { useCategories } from "@/hooks/use-categories";
 import { usePathname } from "next/navigation";
 import {
   Table,
@@ -8,9 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { LucideLoader, Pen, Trash2 } from "lucide-react";
+import { EllipsisVerticalIcon, LucideLoader, Pen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import useOrders from "@/hooks/use-orders";
+import { getDate } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Props {
   setOpen: (open: boolean) => void;
@@ -20,20 +28,29 @@ interface Props {
 
 const OrdersTable = ({ setOpen, setMode, setInitialData }: Props) => {
   const pathname = usePathname();
-  const { categories, deleteCategory, isLoading, isUpdating, isDeleting } =
-    useCategories(pathname.split("/")[1]);
+  const { orders, fetchOrders, deleteOrder, loading } = useOrders(
+    pathname.split("/")[1]
+  );
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCategories, setFilteredCategories] = useState(categories);
+  const [filteredorders, setFilteredorders] = useState(orders);
 
   useEffect(() => {
-    setFilteredCategories(
-      categories.filter((category) =>
-        category.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [searchQuery, categories]);
-  
-  if (isLoading) {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  useEffect(() => {
+    if (searchQuery === "") {
+      setFilteredorders(orders);
+    } else {
+      setFilteredorders(
+        orders.filter((order) =>
+          order.id.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+    }
+  }, [searchQuery, orders]);
+
+  if (loading) {
     return (
       <div className="flex items-center justify-center mt-10">
         <LucideLoader className="animate-spin w-6 h-6" />
@@ -49,51 +66,55 @@ const OrdersTable = ({ setOpen, setMode, setInitialData }: Props) => {
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
-      {filteredCategories.length !== 0 ? (
+      {filteredorders.length !== 0 ? (
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Id</TableHead>
-              <TableHead>Image</TableHead>
-              <TableHead>Name</TableHead>
+              <TableHead>Products</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Created At</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCategories.map((category) => (
-              <TableRow key={category.id}>
-                <TableHead>{category.id}</TableHead>
+            {filteredorders.map((order) => (
+              <TableRow key={order.id}>
+                <TableHead>{order.id}</TableHead>
+                <TableHead>{order.products.length}</TableHead>
+                <TableHead>₹ {order.amount}</TableHead>
+                <TableHead className="capitalize">{order.status}</TableHead>
+                <TableHead>{getDate(order.createdAt)}</TableHead>
                 <TableHead>
-                  {category.image[0] ? (
-                    <img
-                      src={category.image[0].url}
-                      alt={category.image[0].key}
-                      className="w-10 h-10 rounded-md"
-                    />
-                  ) : (
-                    <p>No Image</p>
-                  )}
-                </TableHead>
-                <TableHead>{category.name}</TableHead>
-                <TableHead className="flex items-center gap-2">
-                  <Button
-                    size={"icon"}
-                    onClick={() => {
-                      setMode("edit");
-                      setInitialData(category);
-                      setOpen(true);
-                    }}
-                  >
-                    <Pen />
-                  </Button>
-                  <Button
-                    variant={"destructive"}
-                    size={"icon"}
-                    onClick={() => deleteCategory(category.id)}
-                    disabled={isDeleting}
-                  >
-                    <Trash2 />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <EllipsisVerticalIcon />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="flex flex-col">
+                      <Button
+                        variant={"ghost"}
+                        className="flex flex-row w-full justify-between"
+                        onClick={() => {
+                          setMode("edit");
+                          setInitialData(order);
+                          setOpen(true);
+                        }}
+                      >
+                        <Pen /> Update Status
+                      </Button>
+                      <Button
+                        variant={"ghost"}
+                        className="flex flex-row w-full justify-between"
+                        onClick={() => deleteOrder(order.id)}
+                        disabled={loading}
+                      >
+                        <Trash2 /> Delete Order
+                      </Button>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableHead>
               </TableRow>
             ))}
