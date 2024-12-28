@@ -21,3 +21,7 @@ export function todayDate() {
   const month = new Date().toLocaleString("default", { month: "long" });
   return `${week}, ${month} ${new Date().getDate()}, ${new Date().getFullYear()}`;
 }
+
+export function getDate(date: Date) {
+  return date.toString().split("T")[0] + " " + date.toString().split("T")[1].split(".")[0];
+}
