@@ -1,11 +1,9 @@
+import { prisma } from "@/lib/prisma";
+
 export const addUser = async (userData: any) => {
-  const response = await fetch("/api/users", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData),
+  const user = await prisma.user.create({
+    data: userData,
   });
 
-  const newUser = await response.json();
+  return user;
 };
