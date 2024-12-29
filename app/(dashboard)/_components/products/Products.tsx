@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import ProductsDialog from "./ProductsDialog";
 import ProductsTable from "./ProductsTable";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
