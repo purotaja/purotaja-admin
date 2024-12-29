@@ -28,9 +28,7 @@ import { useCategories } from "@/hooks/use-categories";
 import { useSubCategories } from "@/hooks/use-subcategories";
 import { useProduct } from "@/hooks/use-products";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { Cat, Dog, Fish, Rabbit, Turtle } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Subcategory } from "@prisma/client";
 
 export const ProductsSchema = z.object({
   name: z.string().min(3),
@@ -67,12 +65,20 @@ export interface InitialDataType {
 }
 
 interface Props {
-  mode?: "create" | "edit";
+  mode: "create" | "edit";
+  setMode: (mode: "create" | "edit") => void;
   initialData?: InitialDataType;
+  setInitialData: (data: any) => void;
   setOpen: (open: boolean) => void;
 }
 
-const ProductsForm = ({ mode = "create", initialData, setOpen }: Props) => {
+const ProductsForm = ({
+  mode = "create",
+  initialData,
+  setOpen,
+  setInitialData,
+  setMode,
+}: Props) => {
   const [subcategory, setSubcategory] = useState<string[]>(
     initialData ? initialData.subcategories.map((scat) => scat.id) : []
   );
@@ -204,211 +210,234 @@ const ProductsForm = ({ mode = "create", initialData, setOpen }: Props) => {
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col space-y-4"
-      >
-        {/* Image Upload */}
-        <div className="flex flex-row w-full gap-2">
-          <FormField
-            name="image"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Image</FormLabel>
-                <FormControl>
-                  <UploadDropzone
-                    endpoint="imageUploader"
-                    onClientUploadComplete={handleImageUpload}
-                    onUploadError={(error: Error) => {
-                      console.log("Error: ", error);
-                    }}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <div className="flex gap-4">
-            {uploadedImage &&
-              uploadedImage.map((image, index) => (
-                <div
-                  className="relative w-32 object-cover rounded-md group"
-                  key={index}
-                >
-                  <img
-                    src={image.url}
-                    alt="Product Image"
-                    className="rounded-md"
-                  />
-                  {!isLoading ? (
-                    <button
-                      type="button"
-                      onClick={() => handleImageDelete(image.key)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    >
-                      <X size={16} />
-                    </button>
-                  ) : (
-                    <div className="absolute top-1 right-1 bg-primary p-1 text-white rounded-full">
-                      <LucideLoader size={16} className="animate-spin" />
-                    </div>
-                  )}
-                </div>
-              ))}
-          </div>
-        </div>
-
-        <div className="flex flex-row gap-10 w-full">
-          <div className="w-full">
-            {/* Name Field */}
+    <section className="flex flex-col">
+      <div className="flex flex-row justify-between items-center py-4">
+        <h1 className="text-xl font-semibold">
+          {mode === "create" ? "Add" : "Update"} Product
+        </h1>
+        <Button
+          onClick={() => {
+            setOpen(false);
+            setMode("create");
+            initialData && setInitialData(undefined);
+          }}
+        >
+          Close
+        </Button>
+      </div>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col space-y-4"
+        >
+          {/* Image Upload */}
+          <div className="flex flex-col md:flex-row w-full gap-2">
             <FormField
+              name="image"
               control={form.control}
-              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Product Name</FormLabel>
+                  <FormLabel>Image</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter product name" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Description Field */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter product description" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Price Field */}
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Price</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter price"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    <UploadDropzone
+                      endpoint="imageUploader"
+                      onClientUploadComplete={handleImageUpload}
+                      onUploadError={(error: Error) => {
+                        console.log("Error: ", error);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
               )}
             />
-
-            {/* Category Selection */}
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
+            <div className="flex gap-4">
+              {uploadedImage &&
+                uploadedImage.map((image, index) => (
+                  <div
+                    className="relative w-32 object-cover rounded-md group"
+                    key={index}
                   >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map(({ id, name, image }, idx) => (
-                        <SelectItem value={id} key={idx} className="capitalize">
-                          <div className="flex gap-2 items-center" key={idx}>
-                            {image.slice(0).map((img) => (
-                              <img
-                                src={img.url}
-                                alt={img.key}
-                                key={img.key}
-                                className="w-8 h-8 rounded-md"
-                              />
-                            ))}
-                            {name}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="w-full">
-            {/* Stock Field */}
-            <FormField
-              control={form.control}
-              name="stock"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Stock Quantity</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter stock quantity"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    <img
+                      src={image.url}
+                      alt="Product Image"
+                      className="rounded-md"
                     />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Discount Field */}
-            <FormField
-              control={form.control}
-              name="discount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Discount (%)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter discount percentage"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Subcategory Selection */}
-            <div>
-              <Label>Subcategory</Label>
-              <MultiSelect
-                options={frameworksList}
-                onValueChange={setSubcategory}
-                defaultValue={subcategory}
-                placeholder="Select subcategories"
-                variant="inverted"
-                animation={2}
-                maxCount={3}
-              />
+                    {!isLoading ? (
+                      <button
+                        type="button"
+                        onClick={() => handleImageDelete(image.key)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      >
+                        <X size={16} />
+                      </button>
+                    ) : (
+                      <div className="absolute top-1 right-1 bg-primary p-1 text-white rounded-full">
+                        <LucideLoader size={16} className="animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                ))}
             </div>
           </div>
-        </div>
 
-        <div className="flex flex-row">
-          <Button type="submit" className="flex">
-            Submit Product
-          </Button>
-        </div>
-      </form>
-    </Form>
+          <div className="flex flex-col md:flex-row md:gap-10 w-full">
+            <div className="w-full">
+              {/* Name Field */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Product Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter product name" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* Description Field */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter product description"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* Price Field */}
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Enter price"
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* Category Selection */}
+              <FormField
+                control={form.control}
+                name="categoryId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map(({ id, name, image }, idx) => (
+                          <SelectItem
+                            value={id}
+                            key={idx}
+                            className="capitalize"
+                          >
+                            <div className="flex gap-2 items-center" key={idx}>
+                              {image.slice(0).map((img) => (
+                                <img
+                                  src={img.url}
+                                  alt={img.key}
+                                  key={img.key}
+                                  className="w-8 h-8 rounded-md"
+                                />
+                              ))}
+                              {name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="w-full">
+              {/* Stock Field */}
+              <FormField
+                control={form.control}
+                name="stock"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Stock Quantity</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Enter stock quantity"
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* Discount Field */}
+              <FormField
+                control={form.control}
+                name="discount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discount (%)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Enter discount percentage"
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* Subcategory Selection */}
+              <div>
+                <Label>Subcategory</Label>
+                <MultiSelect
+                  options={frameworksList}
+                  onValueChange={setSubcategory}
+                  defaultValue={subcategory}
+                  placeholder="Select subcategories"
+                  variant="inverted"
+                  animation={2}
+                  maxCount={3}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-row">
+            <Button type="submit" className="flex">
+              Submit Product
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </section>
   );
 };
 
