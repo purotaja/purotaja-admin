@@ -22,6 +22,16 @@ export function todayDate() {
   return `${week}, ${month} ${new Date().getDate()}, ${new Date().getFullYear()}`;
 }
 
-export function getDate(date: Date) {
-  return date.toString().split("T")[0] + " " + date.toString().split("T")[1].split(".")[0];
+export function getDate(date: Date, type?: "date" | "time") {
+  if (type === "date") {
+    return date.toString().split("T")[0];
+  } else if (type === "time") {
+    return date.toString().split("T")[1].split(".")[0];
+  }
+
+  return (
+    date.toString().split("T")[0] +
+    " " +
+    date.toString().split("T")[1].split(".")[0]
+  );
 }

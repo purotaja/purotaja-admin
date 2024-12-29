@@ -15,7 +15,7 @@ export const getUsers = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/users")
+      const response = await fetch("/api/users");
 
       if (response.ok) {
         const fetchedUsers = await response.json();
@@ -43,6 +43,7 @@ export const getUsers = () => {
 
           if (user?.id && fetchedUser) {
             setCurrentUser(fetchedUser.user);
+            setIsAdmin(fetchedUser.user.role === UserType.ADMIN);
           }
         }
       }
@@ -57,12 +58,10 @@ export const getUsers = () => {
   const updateUser = async (id: string, role: UserType) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/users/${id}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify(role)
-        }
-      )
+      const response = await fetch(`/api/users/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(role),
+      });
 
       if (response.ok) {
         fetchUsers();
@@ -79,11 +78,9 @@ export const getUsers = () => {
   const deleteUser = async (id: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/users/${id}`,
-        {
-          method: "DELETE",
-        }
-      )
+      const response = await fetch(`/api/users/${id}`, {
+        method: "DELETE",
+      });
 
       if (response.ok) {
         fetchUsers();
