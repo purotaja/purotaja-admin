@@ -23,7 +23,7 @@ const Layout = ({
     if (isUserLoaded && !isLoading) {
       if (stores.length === 0) {
         router.push("/");
-      } else if (isloadedUser && !isAdmin) {
+      } else if (!isloadedUser && !isAdmin) {
         router.push("/waiting/access");
       }
     }

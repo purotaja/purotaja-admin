@@ -42,7 +42,7 @@ const Header = () => {
   return (
     <div className="flex flex-col py-3 gap-4 h-full">
       <h1 className="text-2xl font-semibold flex-1">Dashboard</h1>
-      <div className="grid grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="flex flex-col gap-5 col-span-2 p-4 border rounded-lg">
           <div className="flex justify-between items-center w-full">
             <h1 className="text-medium font-semibold">Total Revenue</h1>
@@ -62,7 +62,7 @@ const Header = () => {
           <h1 className="text-xl ">{products.length || 0}</h1>
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-5 h-full">
+      <div className="grid grid-rows-4 md:grid-cols-4 grid-flow-row gap-5 h-full">
         <div className="col-span-2">
           <DashboardChart />
         </div>
