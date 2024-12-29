@@ -3,6 +3,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { UserType } from "@prisma/client";
+import { addUser } from "@/actions/user";
 
 export async function POST(req: NextRequest) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET!;
@@ -66,15 +67,7 @@ export async function POST(req: NextRequest) {
       role: "USER" as UserType,
     };
 
-    const response = await fetch("/api/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userData),
-    });
-
-    const newUser = await response.json();
+    const newUser = addUser(userData);
 
     console.log("New user created:", newUser);
 
