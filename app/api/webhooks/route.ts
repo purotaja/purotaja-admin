@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       role: "USER" as UserType,
     };
 
-    const newUser = addUser(userData);
+    const newUser = await addUser(userData);
 
     console.log("New user created:", newUser);
 
