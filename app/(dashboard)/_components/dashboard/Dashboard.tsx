@@ -26,19 +26,19 @@ const Header = () => {
 
   // Calculate derived values outside of render
   const totalRevenue = useMemo(
-    () => orders.reduce((acc, order) => acc + order.amount, 0) || 0,
+    () => orders.reduce((acc, order) => acc + parseFloat(order.amount), 0) || 0,
     [orders]
   );
-
+  
   const deliveredOrdersRevenue = useMemo(
     () =>
       orders.reduce(
-        (acc, order) => acc + (order.status === "DELIVERED" ? order.amount : 0),
+        (acc, order) => acc + (order.status === "DELIVERED" ? parseFloat(order.amount) : 0),
         0
       ) || 0,
     [orders]
   );
-
+  
   return (
     <div className="flex flex-col py-3 gap-4 h-full">
       <h1 className="text-2xl font-semibold flex-1">Dashboard</h1>
@@ -48,14 +48,14 @@ const Header = () => {
             <h1 className="text-medium font-semibold">Total Revenue</h1>
             <h1 className="text-xl font-semibold">₹</h1>
           </div>
-          <h1 className="text-xl ">{deliveredOrdersRevenue}</h1>
+          <h1 className="text-xl ">{deliveredOrdersRevenue.toFixed(2)}</h1>
         </div>
         <div className="flex flex-col gap-5 col-span-1 p-4 border rounded-lg">
           <div className="flex justify-between items-center w-full">
             <h1 className="text-medium font-semibold">Orders</h1>
             <h1 className="text-xl font-semibold">₹</h1>
           </div>
-          <h1 className="text-xl ">{totalRevenue}</h1>
+          <h1 className="text-xl ">{totalRevenue.toFixed(2)}</h1>
         </div>
         <div className="flex flex-col gap-5 col-span-1 p-4 border rounded-lg">
           <h1 className="text-medium font-semibold">Products</h1>

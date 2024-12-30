@@ -69,7 +69,6 @@ export async function PATCH(
     const {
       status,
       addressId,
-      // Add other fields you want to be updatable
     } = body;
 
     // Check if order exists

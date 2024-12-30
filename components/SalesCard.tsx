@@ -4,7 +4,7 @@ import React from "react";
 interface Props {
   datas: {
     id: string;
-    amount: number;
+    amount: string;
     status: string;
     createdAt: Date;
   }[];

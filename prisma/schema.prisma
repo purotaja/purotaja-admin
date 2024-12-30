@@ -142,7 +142,7 @@ model Product {
 
 model Orders {
   id       String      @id @default(auto()) @map("_id") @db.ObjectId
-  amount   Float
+  amount   String
   status   OrderStatus @default(PENDING)
   products Json[]
   address  Address?    @relation(fields: [addressId], references: [id])
@@ -152,6 +152,6 @@ model Orders {
 
   client   Client? @relation(fields: [clientId], references: [id])
   clientId String? @db.ObjectId
-
+  
   addressId String? @db.ObjectId
 }
