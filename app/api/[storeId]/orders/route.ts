@@ -1,11 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod"; // For input validation
+
+// Input validation schema
+const ProductOrderSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  price: z.number(),
+  quantity: z.number(),
+  subtotal: z.number(),
+  subcategory: z.string().nullable(),
+});
+
+const OrderInputSchema = z.object({
+  orders: z.object({
+    products: z.array(
+      z.object({
+        id: z.string(),
+        subcategory: z.string(),
+        quantity: z.string(),
+      })
+    ),
+    userId: z.string(),
+    addressId: z.string(),
+  }),
+});
 
 // CORS headers configuration
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*', // Configure this based on your needs
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  "Access-Control-Allow-Origin": "*", // Configure this based on your needs
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 // Handle OPTIONS request for CORS preflight
@@ -44,87 +69,103 @@ export async function GET(
   }
 }
 
-// POST Create Product with CORS
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { storeId: string } }
-) {
+export async function POST(request: Request) {
   try {
-    // Get the request body
-    const body = await req.json();
+    const body = await request.json();
+    const validatedData = OrderInputSchema.parse(body);
+    const { orders } = validatedData;
 
-    // Destructure and validate required fields
-    const {
-      name,
-      description,
-      price,
-      categoryId,
-      stock,
-      image,
-      discount,
-      subcategories,
-    } = body;
+    // Fetch all products in one query
+    const productIds = orders.products.map((product) => product.id);
+    const productsFromDB = await prisma.product.findMany({
+      where: {
+        id: {
+          in: productIds,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+      },
+    });
 
-    // Validate required fields with proper error responses
-    const validationErrors = [];
-    if (!name) validationErrors.push("Name is required");
-    if (!price) validationErrors.push("Price is required");
-    if (!categoryId) validationErrors.push("Category ID is required");
+    // Create a map for quick product lookup
+    const productMap = new Map(
+      productsFromDB.map((product) => [product.id, product])
+    );
 
-    if (validationErrors.length > 0) {
+    // Calculate products with subtotals
+    let totalAmount = 0;
+    const enrichedProducts = orders.products.map((orderProduct) => {
+      const product = productMap.get(orderProduct.id);
+      if (!product) {
+        throw new Error(`Product not found: ${orderProduct.id}`);
+      }
+
+      const quantity = parseInt(orderProduct.quantity);
+      const subtotal = product.price * quantity;
+      totalAmount += subtotal;
+
+      return {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: quantity,
+        subtotal: subtotal,
+        subcategory: orderProduct.subcategory || null,
+      };
+    });
+
+    // Create the order with exact database structure
+    const order = await prisma.orders.create({
+      data: {
+        amount: totalAmount.toString(),
+        products: enrichedProducts,
+        clientId: orders.userId,
+        addressId: orders.addressId,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: order,
+      },
+      {
+        status: 201,
+        headers: corsHeaders,
+      }
+    );
+  } catch (error) {
+    console.error("Error creating order:", error);
+
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { errors: validationErrors },
+        {
+          success: false,
+          error: "Invalid input data",
+          details: error.errors,
+        },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const subdata = await prisma.subcategory.findMany({
-      include: {
-        image: true,
-      },
-    });
-
-    const addSubcategories = subcategories?.map(
-      (subcategoryId: string) =>
-        subdata.find((sub) => sub.id === subcategoryId) || {}
-    );
-
-    // Create product
-    const product = await prisma.product.create({
-      data: {
-        name,
-        description,
-        price,
-        stock: stock || 0,
-        discount: discount || 0,
-        categoryId,
-        subcategories: addSubcategories,
-      },
-      include: {
-        image: true,
-        category: true,
-      },
-    });
-
-    return NextResponse.json(
-      { id: product.id },
-      { headers: corsHeaders }
-    );
-  } catch (error) {
-    console.error("[PRODUCTS_POST]", error);
-    
-    // Handle specific Prisma errors
-    if (error instanceof Error) {
-      if (error.message.includes('Unique constraint')) {
-        return NextResponse.json(
-          { error: "A product with this name already exists" },
-          { status: 409, headers: corsHeaders }
-        );
-      }
+    if (error instanceof Error && error.message.includes("Product not found")) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message,
+        },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        success: false,
+        error: "Failed to create order",
+      },
       { status: 500, headers: corsHeaders }
     );
   }
