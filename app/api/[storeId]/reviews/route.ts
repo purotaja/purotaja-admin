@@ -1,7 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(
+  req: Request,
+  { params }: { params: { storeId: string } }
+) {
   try {
     const reviews = await prisma.review.findMany({
       include: { product: true, client: true },

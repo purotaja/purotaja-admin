@@ -1,7 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function DELETE({ params }: { params: { reviewId: string } }) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: { storeId: string; reviewId: string } }
+) {
   try {
     const reviews = await prisma.review.delete({
       where: {
