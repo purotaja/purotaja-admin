@@ -35,3 +35,8 @@ export function getDate(date: Date, type?: "date" | "time") {
     date.toString().split("T")[1].split(".")[0]
   );
 }
+
+export function getMonth(date: Date) {
+  const month = date.toLocaleString("default", { month: "long" });
+  return month;
+}
