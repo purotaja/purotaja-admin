@@ -10,15 +10,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-
-const chartData = [
-  { month: "January", revenue: 186, mobile: 80 },
-  { month: "February", revenue: 305, mobile: 200 },
-  { month: "March", revenue: 237, mobile: 120 },
-  { month: "April", revenue: 73, mobile: 190 },
-  { month: "May", revenue: 209, mobile: 130 },
-  { month: "June", revenue: 214, mobile: 140 },
-];
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo } from "react";
+import useOrders from "@/hooks/use-orders";
+import { getMonth } from "@/lib/utils";
 
 const chartConfig = {
   revenue: {
@@ -28,6 +23,37 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function DashboardChart() {
+  const pathname = usePathname();
+  const storeId = useMemo(() => pathname.split("/")[1], [pathname]);
+
+  const { fetchOrders, orders } = useOrders(storeId);
+
+  useEffect(() => {
+    const initializeDashboard = async () => {
+      await Promise.all([fetchOrders()]);
+    };
+
+    initializeDashboard();
+  }, [storeId]);
+
+  const chartData = orders.reduce((acc, order) => {
+    const month = getMonth(new Date(order.createdAt));
+    const amount = parseFloat(order.amount);
+
+    const existingMonth = acc.find((item) => item.month === month);
+    if (existingMonth) {
+      existingMonth.revenue += amount;
+      existingMonth.mobile += amount;
+    } else {
+      acc.push({
+        month,
+        revenue: amount,
+        mobile: amount,
+      });
+    }
+    return acc;
+  }, [] as { month: string; revenue: number; mobile: number }[]);
+
   return (
     <ChartContainer config={chartConfig} className="border rounded-lg p-4">
       <BarChart accessibilityLayer data={chartData}>

@@ -11,7 +11,7 @@ const Header = () => {
   const pathname = usePathname();
   // Extract storeId once and memoize it
   const storeId = useMemo(() => pathname.split("/")[1], [pathname]);
-
+  
   const { fetchOrders, orders } = useOrders(storeId);
   const { fetchProducts, products } = useProduct({ storeId });
 
@@ -20,7 +20,7 @@ const Header = () => {
     const initializeDashboard = async () => {
       await Promise.all([fetchOrders(), fetchProducts()]);
     };
-
+    
     initializeDashboard();
   }, [storeId]); // Only re-run if storeId changes
 
@@ -29,18 +29,19 @@ const Header = () => {
     () => orders.reduce((acc, order) => acc + parseFloat(order.amount), 0) || 0,
     [orders]
   );
-  
+
   const deliveredOrdersRevenue = useMemo(
     () =>
       orders.reduce(
-        (acc, order) => acc + (order.status === "DELIVERED" ? parseFloat(order.amount) : 0),
+        (acc, order) =>
+          acc + (order.status === "DELIVERED" ? parseFloat(order.amount) : 0),
         0
       ) || 0,
     [orders]
   );
-  
+
   return (
-    <div className="flex flex-col py-3 gap-4 h-full">
+    <div className="flex flex-col py-3 gap-4 h-max">
       <h1 className="text-2xl font-semibold flex-1">Dashboard</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="flex flex-col gap-5 col-span-2 p-4 border rounded-lg">
@@ -62,7 +63,7 @@ const Header = () => {
           <h1 className="text-xl ">{products.length || 0}</h1>
         </div>
       </div>
-      <div className="grid grid-rows-4 md:grid-cols-4 grid-flow-row gap-5 h-full">
+      <div className="grid grid-rows-2 md:grid-cols-4 grid-flow-row gap-5 h-full">
         <div className="col-span-2">
           <DashboardChart />
         </div>
