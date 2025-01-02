@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import SubcategoryDialog from "./SubcategoryDialog";
-import SubcategoryTable from "./SubcategoryTable";
+import SubcategoryDialog from "./SubproductsDialog";
+import SubcategoryTable from "./SubproductsTable";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import SubproductsTable from "../subproducts/SubproductsTable";
-import SubproductsDialog from "../subproducts/SubproductsDialog";
 
-const Subcategory = () => {
+const Subproducts = () => {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [initialData, setInitialData] = useState();
@@ -17,19 +15,19 @@ const Subcategory = () => {
     <>
       <div className="py-5">
         <div className="flex flex-row items-center justify-between">
-          <h1 className="text-xl font-semibold">Sub categories</h1>
+          <h1 className="text-xl font-semibold">Sub Products</h1>
           <Button size={"sm"} onClick={() => setOpen(true)}>
             <Plus />
-            Add Subcategory
+            Add Subproducts
           </Button>
         </div>
-        <SubproductsTable
+        <SubcategoryTable
           setOpen={setOpen}
           setMode={setMode}
           setInitialData={setInitialData}
         />
       </div>
-      <SubproductsDialog
+      <SubcategoryDialog
         open={open}
         mode={mode}
         setOpen={setOpen}
@@ -41,4 +39,4 @@ const Subcategory = () => {
   );
 };
 
-export default Subcategory;
+export default Subproducts;

@@ -35,7 +35,7 @@ interface Props {
   setOpen: (open: boolean) => void;
 }
 
-const SubCategoryForm = ({ mode = "create", initialData, setOpen }: Props) => {
+const SubproductsForm = ({ mode = "create", initialData, setOpen }: Props) => {
   const [uploadedImage, setUploadedImage] = useState<{
     url: string;
     key: string;
@@ -183,4 +183,4 @@ const SubCategoryForm = ({ mode = "create", initialData, setOpen }: Props) => {
   );
 };
 
-export default SubCategoryForm;
+export default SubproductsForm;

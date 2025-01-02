@@ -10,6 +10,7 @@ import {
   BookCopyIcon,
   ShoppingCart,
   Stars,
+  ShoppingBasket,
 } from "lucide-react";
 
 type Submenu = {
@@ -61,6 +62,11 @@ export function getMenuList(pathname: string): Group[] {
           href: "/products",
           label: "Products",
           icon: ShoppingCart,
+        },
+        {
+          href: "/subproducts",
+          label: "Sub Products",
+          icon: ShoppingBasket,
         },
         {
           href: "/orders",

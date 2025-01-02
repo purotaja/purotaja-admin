@@ -29,6 +29,7 @@ import { useSubCategories } from "@/hooks/use-subcategories";
 import { useProduct } from "@/hooks/use-products";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Label } from "@/components/ui/label";
+import { twMerge } from "tailwind-merge";
 
 export const ProductsSchema = z.object({
   name: z.string().min(3),
@@ -241,6 +242,8 @@ const ProductsForm = ({
                   <FormControl>
                     <UploadDropzone
                       endpoint="imageUploader"
+                      config={{ cn: twMerge }}
+                      className="ut-button:bg-[#73549b] ut-label:text-[#73549b]"
                       onClientUploadComplete={handleImageUpload}
                       onUploadError={(error: Error) => {
                         console.log("Error: ", error);
