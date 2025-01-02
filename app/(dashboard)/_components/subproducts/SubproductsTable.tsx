@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useCategories } from "@/hooks/use-categories";
 import { usePathname } from "next/navigation";
 import {
   Table,
@@ -11,8 +10,8 @@ import {
 import { LucideLoader, Pen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSubCategories } from "@/hooks/use-subcategories";
 import SubMenus from "@/components/SubMenus";
+import { SubproductType, useSubproduct } from "@/hooks/use-subproduct";
 
 interface Props {
   setOpen: (open: boolean) => void;
@@ -22,21 +21,22 @@ interface Props {
 
 const SubproductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
   const pathname = usePathname();
-  const { subcategories, deleteCategory, isLoading, isUpdating, isDeleting } =
-    useSubCategories(pathname.split("/")[1]);
+  const { subproducts, loading } = useSubproduct(pathname.split("/")[1]);
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredSubCategories, setFilteredSubCategories] =
-    useState(subcategories);
+  const [filteredSubproducts, setFilteredSubproducts] = useState<
+    SubproductType[]
+  >([]);
 
   useEffect(() => {
-    setFilteredSubCategories(
-      subcategories.filter((subcategory) =>
-        subcategory.name.toLowerCase().includes(searchQuery.toLowerCase())
+    setFilteredSubproducts(
+      subproducts.filter((subproduct) =>
+        subproduct.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
     );
-  }, [searchQuery, subcategories]);
+  }, [searchQuery, subproducts]);
 
-  if (isLoading || isUpdating || isDeleting) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center mt-10">
         <LucideLoader className="animate-spin w-6 h-6" />
@@ -48,11 +48,11 @@ const SubproductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
     <div className="flex flex-col mt-5">
       <Input
         placeholder="Search"
-        className="w-1/6"
+        className="w-1/2 md:w-1/6"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
-      {filteredSubCategories.length !== 0 ? (
+      {filteredSubproducts.length !== 0 ? (
         <Table>
           <TableHeader>
             <TableRow>
@@ -63,38 +63,38 @@ const SubproductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredSubCategories.map((subcategory) => (
-              <TableRow key={subcategory.id}>
-                <TableHead>{subcategory.id}</TableHead>
+            {filteredSubproducts.map((subproduct) => (
+              <TableRow key={subproduct.id}>
+                <TableHead>{subproduct.id}</TableHead>
                 <TableHead>
-                  {subcategory.image.length > 0 && (
+                  {subproduct.image.length > 0 && (
                     <img
-                      src={subcategory.image[0].url}
-                      alt={subcategory.image[0].id}
+                      src={subproduct.image[0].url}
+                      alt={subproduct.image[0].id}
                       className="w-10 h-10 rounded-md"
                     />
                   )}
                 </TableHead>
-                <TableHead>{subcategory.name}</TableHead>
+                <TableHead>{subproduct.name}</TableHead>
                 <TableHead className="flex items-center gap-2">
                   <SubMenus>
                     <Button
                       variant={"ghost"}
                       onClick={() => {
                         setMode("edit");
-                        setInitialData(subcategory);
+                        setInitialData(subproduct);
                         setOpen(true);
                       }}
                     >
-                      <Pen /> Update Subcategory
+                      <Pen /> Update subproduct
                     </Button>
-                    <Button
+                    {/* <Button
                       variant={"ghost"}
-                      onClick={() => deleteCategory(subcategory.id)}
+                      onClick={() => deleteCategory(subproduct.id)}
                       disabled={isDeleting}
                     >
-                      <Trash2 /> Delete Subcategory
-                    </Button>
+                      <Trash2 /> Delete subproduct
+                    </Button> */}
                   </SubMenus>
                 </TableHead>
               </TableRow>
@@ -104,7 +104,7 @@ const SubproductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
       ) : (
         <TableBody className="flex items-center justify-center w-full">
           <h1 className="text-gray-400 mt-5 text-center">
-            No sub-categories found.
+            No sub-products found.
           </h1>
         </TableBody>
       )}

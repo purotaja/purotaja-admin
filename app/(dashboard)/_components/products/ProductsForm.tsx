@@ -25,20 +25,16 @@ import {
 import { deleteUploadthingFiles } from "@/lib/server/uploadthing";
 import { usePathname } from "next/navigation";
 import { useCategories } from "@/hooks/use-categories";
-import { useSubCategories } from "@/hooks/use-subcategories";
 import { useProduct } from "@/hooks/use-products";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Label } from "@/components/ui/label";
 import { twMerge } from "tailwind-merge";
+import { Textarea } from "@/components/ui/textarea";
 
 export const ProductsSchema = z.object({
   name: z.string().min(3),
   description: z.string().min(10),
-  price: z.number().min(1),
-  stock: z.number().min(1),
-  discount: z.number().min(0),
   categoryId: z.string(),
-  subcategories: z.array(z.string()).optional(),
   image: z.array(
     z.object({
       url: z.string(),
@@ -51,18 +47,14 @@ export interface InitialDataType {
   id: string;
   name: string;
   description: string;
-  price: number;
-  stock: number;
-  discount: number | null;
   categoryId: string;
-  subcategories: any[];
-  createdAt: Date;
-  updatedAt: Date;
   image: {
     id: string;
     url: string;
     key: string;
   }[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface Props {
@@ -80,9 +72,6 @@ const ProductsForm = ({
   setInitialData,
   setMode,
 }: Props) => {
-  const [subcategory, setSubcategory] = useState<string[]>(
-    initialData ? initialData.subcategories.map((scat) => scat.id) : []
-  );
   const [uploadedImage, setUploadedImage] = useState<
     | {
         url: string;
@@ -96,15 +85,8 @@ const ProductsForm = ({
   const { categories, isLoading: catloading } = useCategories(
     pathname.split("/")[1]
   );
-  const { subcategories, isLoading: subcatloading } = useSubCategories(
-    pathname.split("/")[1]
-  );
   const { createProduct, updateProduct, fetchProducts } = useProduct({
     storeId: pathname.split("/")[1],
-  });
-
-  const frameworksList = subcategories.map((sub) => {
-    return { value: sub.id, label: sub.name };
   });
 
   const form = useForm<z.infer<typeof ProductsSchema>>({
@@ -113,13 +95,7 @@ const ProductsForm = ({
       ? {
           name: initialData.name,
           description: initialData.description,
-          price: initialData.price,
-          stock: initialData.stock,
-          discount: initialData.discount || 0,
           categoryId: initialData.categoryId,
-          subcategories: initialData.subcategories
-            ? initialData.subcategories.map((scat) => scat.id)
-            : [],
           image: initialData.image
             ? initialData.image.map((img) => ({
                 url: img.url,
@@ -130,12 +106,8 @@ const ProductsForm = ({
       : {
           name: "",
           description: "",
-          price: 0,
-          stock: 0,
-          discount: 0,
           categoryId: "",
-          subcategories: [],
-          image: [{ url: "", key: "" }],
+          image: [],
         },
   });
 
@@ -168,7 +140,7 @@ const ProductsForm = ({
       setUploadedImage((prev) => prev?.filter((img) => img.key !== key) || []);
       form.setValue(
         "image",
-        form.getValues("image").filter((img) => img.key !== key)
+        form.getValues("image").filter((img) => img.key !== key) || []
       );
     } catch (error) {
       console.error("Error: ", error);
@@ -178,16 +150,11 @@ const ProductsForm = ({
   };
 
   const onSubmit = async (body: z.infer<typeof ProductsSchema>) => {
-    body = {
-      ...body,
-      subcategories: subcategory,
-    };
-
     try {
       mode === "create"
         ? await createProduct(body)
         : initialData && (await updateProduct(initialData.id, body));
-
+    
       const message =
         mode === "create"
           ? "Product created successfully."
@@ -200,9 +167,10 @@ const ProductsForm = ({
       setOpen(false);
       fetchProducts();
     }
+    console.log(body);
   };
 
-  if (catloading || subcatloading) {
+  if (catloading) {
     return (
       <div className="flex justify-center items-center h-96">
         <LucideLoader size={32} className="animate-spin" />
@@ -283,53 +251,17 @@ const ProductsForm = ({
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row md:gap-10 w-full">
-            <div className="w-full">
+          <div className="flex flex-col space-y-2 md:space-y-4 w-full">
+            <div className="flex flex-col md:flex-row md:gap-10 w-full">
               {/* Name Field */}
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="w-full">
                     <FormLabel>Product Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter product name" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              {/* Description Field */}
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter product description"
-                        {...field}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              {/* Price Field */}
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter price"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
                     </FormControl>
                   </FormItem>
                 )}
@@ -340,7 +272,7 @@ const ProductsForm = ({
                 control={form.control}
                 name="categoryId"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="w-full">
                     <FormLabel>Category</FormLabel>
                     <Select
                       onValueChange={field.onChange}
@@ -378,59 +310,23 @@ const ProductsForm = ({
               />
             </div>
 
-            <div className="w-full">
-              {/* Stock Field */}
-              <FormField
-                control={form.control}
-                name="stock"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stock Quantity</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter stock quantity"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              {/* Discount Field */}
-              <FormField
-                control={form.control}
-                name="discount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Discount (%)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter discount percentage"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              {/* Subcategory Selection */}
-              <div>
-                <Label>Subcategory</Label>
-                <MultiSelect
-                  options={frameworksList}
-                  onValueChange={setSubcategory}
-                  defaultValue={subcategory}
-                  placeholder="Select subcategories"
-                  variant="inverted"
-                  animation={2}
-                  maxCount={3}
-                />
-              </div>
-            </div>
+            {/* Description Field */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Enter product description"
+                      className=" h-[100px]"
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
           </div>
 
           <div className="flex flex-row">

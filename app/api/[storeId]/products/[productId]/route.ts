@@ -44,14 +44,7 @@ export async function GET(
       );
     }
 
-    const afterDiscount = {
-      ...product,
-      discounted_price: product.discount
-        ? product.price - (product.price * product.discount) / 100
-        : product.price,
-    };
-
-    return corsResponse(NextResponse.json({ product: afterDiscount }));
+    return corsResponse(NextResponse.json({ product }));
   } catch (error) {
     console.error("[PRODUCT_GET]", error);
     return corsResponse(
@@ -67,16 +60,7 @@ export async function PATCH(
   try {
     const body = await req.json();
 
-    const {
-      name,
-      description,
-      discount,
-      price,
-      stock,
-      categoryId,
-      subcategories,
-      image,
-    } = body;
+    const { name, categoryId, image } = body;
 
     const existingProduct = await prisma.product.findUnique({
       where: {
@@ -90,29 +74,13 @@ export async function PATCH(
       );
     }
 
-    const subdata = await prisma.subcategory.findMany({
-      include: {
-        image: true,
-      },
-    });
-
-    const addSubcategories = subcategories?.map(
-      (subcategoryId: string) =>
-        subdata.find((sub) => sub.id === subcategoryId) || {}
-    );
-
     const product = await prisma.product.update({
       where: {
         id: params.productId,
       },
       data: {
         name,
-        description,
-        price,
-        stock,
         categoryId,
-        discount,
-        subcategories: addSubcategories,
         image: image && {
           deleteMany: {},
           createMany: {

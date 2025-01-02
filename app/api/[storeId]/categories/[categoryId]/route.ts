@@ -43,7 +43,7 @@ export async function GET(
         NextResponse.json({ message: "Category not found" }, { status: 404 })
       );
     }
-
+    
     const products = await prisma.product.findMany({
       where: {
         categoryId: params.categoryId,

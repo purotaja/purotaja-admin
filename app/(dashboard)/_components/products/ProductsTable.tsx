@@ -77,7 +77,6 @@ const ProductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
               <TableHead>Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Subcategory</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -98,10 +97,6 @@ const ProductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
                 </TableHead>
                 <TableHead>{product.name}</TableHead>
                 <TableHead>{product.category.name}</TableHead>
-                <TableHead>
-                  {product.subcategories &&
-                    product.subcategories.map((scat) => scat.name).join(", ")}
-                </TableHead>
                 <TableHead className="flex items-center gap-2">
                   <SubMenus>
                     <Button
@@ -112,7 +107,7 @@ const ProductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
                         setOpen(true);
                       }}
                     >
-                      <Pen /> Edit Product
+                      <Pen /> Update Product
                     </Button>
                     <Button
                       variant={"ghost"}

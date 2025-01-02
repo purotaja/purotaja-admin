@@ -54,11 +54,6 @@ export function getMenuList(pathname: string): Group[] {
           icon: Bookmark,
         },
         {
-          href: "/subcategories",
-          label: "Sub Categories",
-          icon: BookCopyIcon,
-        },
-        {
           href: "/products",
           label: "Products",
           icon: ShoppingCart,

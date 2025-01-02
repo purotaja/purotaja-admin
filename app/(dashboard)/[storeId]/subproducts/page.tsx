@@ -9,7 +9,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
-import Subcategory from "../../_components/subcategories/Subcategory";
 import Subproducts from "../../_components/subproducts/Subproducts";
 
 const Page = () => {

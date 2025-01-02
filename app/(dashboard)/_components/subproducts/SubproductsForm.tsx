@@ -18,7 +18,6 @@ import { LucideLoader, X } from "lucide-react";
 import { deleteUploadthingFiles } from "@/lib/server/uploadthing";
 import { useCategories } from "@/hooks/use-categories";
 import { usePathname } from "next/navigation";
-import { useSubCategories } from "@/hooks/use-subcategories";
 import { twMerge } from "tailwind-merge";
 
 export const SubcategorySchema = z.object({
@@ -30,12 +29,22 @@ export const SubcategorySchema = z.object({
 });
 
 interface Props {
+  open: boolean;
   mode?: "create" | "edit";
   initialData?: any;
+  setInitialData: (data: any) => void;
   setOpen: (open: boolean) => void;
+  setMode: (mode: "create" | "edit") => void;
 }
 
-const SubproductsForm = ({ mode = "create", initialData, setOpen }: Props) => {
+const SubproductsForm = ({
+  open,
+  mode = "create",
+  initialData,
+  setInitialData,
+  setOpen,
+  setMode,
+}: Props) => {
   const [uploadedImage, setUploadedImage] = useState<{
     url: string;
     key: string;
@@ -44,9 +53,6 @@ const SubproductsForm = ({ mode = "create", initialData, setOpen }: Props) => {
 
   const pathname = usePathname();
   const { categories } = useCategories(pathname.split("/")[1]);
-  const { refetch, createCategory, updateCategory } = useSubCategories(
-    pathname.split("/")[1]
-  );
 
   const form = useForm<z.infer<typeof SubcategorySchema>>({
     resolver: zodResolver(SubcategorySchema),
@@ -105,9 +111,8 @@ const SubproductsForm = ({ mode = "create", initialData, setOpen }: Props) => {
 
     try {
       mode === "create"
-        ? createCategory(body)
-        : updateCategory(initialData.id, updatedBody!);
-      refetch();
+        ? console.log("Create Category: ", body)
+        : console.log("Edit Category: ", updatedBody);
 
       toast.success("Category created successfully");
     } catch (error) {
@@ -120,66 +125,82 @@ const SubproductsForm = ({ mode = "create", initialData, setOpen }: Props) => {
   };
 
   return (
-    <Form {...form}>
-      <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="flex flex-col w-full gap-2">
+    <section className="flex flex-col">
+      <div className="flex flex-row justify-between items-center py-4">
+        <h1 className="text-xl font-semibold">
+          {mode === "create" ? "Add" : "Update"} Subproduct
+        </h1>
+        <Button
+          onClick={() => {
+            setOpen(false);
+            setMode("create");
+            initialData && setInitialData(undefined);
+          }}
+        >
+          Close
+        </Button>
+      </div>
+      <Form {...form}>
+        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="flex flex-col md:flex-row w-full gap-2">
+            <FormField
+              name="name"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Image</FormLabel>
+                  <FormControl>
+                    <UploadDropzone
+                      endpoint="imageUploader"
+                      config={{ cn: twMerge }}
+                      className="ut-button:bg-[#73549b] ut-label:text-[#73549b]"
+                      onClientUploadComplete={handleImageUpload}
+                      onUploadError={(error: Error) => {
+                        console.log("Error: ", error);
+                      }}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            {uploadedImage && (
+              <div className="relative w-32 object-cover rounded-md group">
+                <img
+                  src={uploadedImage.url}
+                  alt="Category Image"
+                  className="rounded-md"
+                />
+                {!loading ? (
+                  <button
+                    onClick={handleImageDelete}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  >
+                    <X size={16} />
+                  </button>
+                ) : (
+                  <div className="absolute top-1 right-1 bg-primary p-1 text-white rounded-full">
+                    <LucideLoader size={16} className="animate-spin" />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           <FormField
             name="name"
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Image</FormLabel>
+                <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <UploadDropzone
-                    endpoint="imageUploader"
-                    config={{ cn: twMerge }}
-                    className="ut-button:bg-[#73549b] ut-label:text-[#73549b]"
-                    onClientUploadComplete={handleImageUpload}
-                    onUploadError={(error: Error) => {
-                      console.log("Error: ", error);
-                    }}
-                  />
+                  <Input {...field} />
                 </FormControl>
               </FormItem>
             )}
           />
-          {uploadedImage && (
-            <div className="relative w-32 object-cover rounded-md group">
-              <img
-                src={uploadedImage.url}
-                alt="Category Image"
-                className="rounded-md"
-              />
-              {!loading ? (
-                <button
-                  onClick={handleImageDelete}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                >
-                  <X size={16} />
-                </button>
-              ) : (
-                <div className="absolute top-1 right-1 bg-primary p-1 text-white rounded-full">
-                  <LucideLoader size={16} className="animate-spin" />
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        <FormField
-          name="name"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <Button type="submit">{mode === "create" ? "Create" : "Edit"}</Button>
-      </form>
-    </Form>
+          <Button type="submit">{mode === "create" ? "Create" : "Edit"}</Button>
+        </form>
+      </Form>
+    </section>
   );
 };
 

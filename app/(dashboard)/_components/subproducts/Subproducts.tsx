@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import SubcategoryDialog from "./SubproductsDialog";
 import SubcategoryTable from "./SubproductsTable";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import SubproductsForm from "./SubproductsForm";
 
 const Subproducts = () => {
   const [open, setOpen] = useState(false);
@@ -13,28 +13,31 @@ const Subproducts = () => {
 
   return (
     <>
-      <div className="py-5">
-        <div className="flex flex-row items-center justify-between">
-          <h1 className="text-xl font-semibold">Sub Products</h1>
-          <Button size={"sm"} onClick={() => setOpen(true)}>
-            <Plus />
-            Add Subproducts
-          </Button>
+      {!open ? (
+        <div className="py-5">
+          <div className="flex flex-row items-center justify-between">
+            <h1 className="text-xl font-semibold">Sub Products</h1>
+            <Button size={"sm"} onClick={() => setOpen(true)}>
+              <Plus />
+              Add Subproducts
+            </Button>
+          </div>
+          <SubcategoryTable
+            setOpen={setOpen}
+            setMode={setMode}
+            setInitialData={setInitialData}
+          />
         </div>
-        <SubcategoryTable
+      ) : (
+        <SubproductsForm
+          open={open}
+          mode={mode}
           setOpen={setOpen}
           setMode={setMode}
+          initialData={initialData}
           setInitialData={setInitialData}
         />
-      </div>
-      <SubcategoryDialog
-        open={open}
-        mode={mode}
-        setOpen={setOpen}
-        setMode={setMode}
-        initialData={initialData}
-        setInitialData={setInitialData}
-      />
+      )}
     </>
   );
 };

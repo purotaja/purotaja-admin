@@ -4,53 +4,23 @@ import { useState } from "react";
 import { Product } from "@prisma/client";
 import { useEffect } from "react";
 
-interface Subcategories {
-  id: string;
-  name: string;
-}
-
-export interface ProductWithRelations extends Omit<Product, "subcategories"> {
-  discounted_price?: number;
-  subcategories?: Subcategories[];
+export interface ProductWithRelations extends Product{
   category?: any;
   image?: any[];
 }
 
-export interface ProductCreateUpdate extends Omit<Product, "subcategories"> {
-  discounted_price?: number;
-  subcategories?: string[];
+export interface ProductCreateUpdate extends Product {
   category?: any;
   image?: any[];
-}
-
-interface PaginationInfo {
-  currentPage: number;
-  totalPages: number;
-  totalProducts: number;
-}
-
-interface ProductFilters {
-  page?: number;
-  limit?: number;
-  categoryId?: string;
-  subcategoryId?: string;
-  minPrice?: number;
-  maxPrice?: number;
 }
 
 export function useProduct({ storeId }: { storeId: string }) {
   const [products, setProducts] = useState<ProductWithRelations[]>([]);
   const [product, setProduct] = useState<ProductWithRelations | null>(null);
-  const [pagination, setPagination] = useState<PaginationInfo>({
-    currentPage: 1,
-    totalPages: 0,
-    totalProducts: 0,
-  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProducts = async () =>
-    // filters: ProductFilters = { page: 1, limit: 10 }
     {
       setLoading(true);
       setError(null);
@@ -64,7 +34,6 @@ export function useProduct({ storeId }: { storeId: string }) {
 
         const data = await response.json();
         setProducts(data.products);
-        setPagination(data.pagination);
       } catch (err: unknown) {
         const errorMessage =
           err instanceof Error ? err.message : "An unexpected error occurred";
@@ -190,7 +159,6 @@ export function useProduct({ storeId }: { storeId: string }) {
   return {
     products,
     product,
-    pagination,
     loading,
     error,
     fetchProducts,
