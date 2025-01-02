@@ -13,12 +13,12 @@ import {
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import useOrders from "@/hooks/use-orders";
-import { getMonth, getMonthlyOrders } from "@/lib/utils";
+import { getMonthlyOrders } from "@/lib/utils";
 
 const chartConfig = {
   revenue: {
     label: "₹ Revenue by Month",
-    color: "#151515",
+    color: "#73549B",
   },
 } satisfies ChartConfig;
 

@@ -8,12 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { LucideLoader, Pen, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LucideLoader } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useSubCategories } from "@/hooks/use-subcategories";
 import { ProductWithRelations, useProduct } from "@/hooks/use-products";
 import { toast } from "sonner";
+import { EllipsisVerticalIcon, Pen, Trash2 } from "lucide-react";
+import SubMenus from "@/components/SubMenus";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   setOpen: (open: boolean) => void;
@@ -48,6 +49,16 @@ const ProductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
         <LucideLoader className="animate-spin w-6 h-6" />
       </div>
     );
+  }
+
+  async function hanldeDelete(id: string) {
+    try {
+      await deleteProduct(id);
+      toast.success("Product deleted successfully.");
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to delete product.");
+    }
   }
 
   return (
@@ -92,27 +103,25 @@ const ProductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
                     product.subcategories.map((scat) => scat.name).join(", ")}
                 </TableHead>
                 <TableHead className="flex items-center gap-2">
-                  <Button
-                    size={"icon"}
-                    onClick={() => {
-                      setMode("edit");
-                      setInitialData(product);
-                      setOpen(true);
-                    }}
-                  >
-                    <Pen />
-                  </Button>
-                  <Button
-                    variant={"destructive"}
-                    size={"icon"}
-                    onClick={() => {
-                      deleteProduct(product.id);
-                      toast.success("Product deleted successfully.");
-                    }}
-                    disabled={loading}
-                  >
-                    <Trash2 />
-                  </Button>
+                  <SubMenus>
+                    <Button
+                      variant={"ghost"}
+                      onClick={() => {
+                        setMode("edit");
+                        setInitialData(product);
+                        setOpen(true);
+                      }}
+                    >
+                      <Pen /> Edit Product
+                    </Button>
+                    <Button
+                      variant={"ghost"}
+                      onClick={() => hanldeDelete(product.id)}
+                      disabled={loading}
+                    >
+                      <Trash2 /> Delete Product
+                    </Button>
+                  </SubMenus>
                 </TableHead>
               </TableRow>
             ))}

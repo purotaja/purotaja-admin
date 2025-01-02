@@ -29,7 +29,7 @@ export function getDate(date: Date, type?: "date" | "time") {
   } else if (type === "time") {
     return date.toString().split("T")[1].split(".")[0];
   }
-
+  
   return (
     date.toString().split("T")[0] +
     " " +
@@ -43,41 +43,38 @@ export function getMonth(date: Date) {
 }
 
 export function getMonthlyOrders(orders: Orders[]) {
-  const data = orders
-    .reduce((acc, order) => {
-      const month = getMonth(new Date(order.createdAt));
-      const amount = parseFloat(order.amount);
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  
+  const initialData = months.map(month => ({
+    month,
+    revenue: 0,
+    mobile: 0
+  }));
 
-      const existingMonth = acc.find((item) => item.month === month);
-      if (existingMonth) {
-        existingMonth.revenue += amount;
-        existingMonth.mobile += amount;
-      } else {
-        acc.push({
-          month,
-          revenue: amount,
-          mobile: amount,
-        });
-      }
-      return acc;
-    }, [] as { month: string; revenue: number; mobile: number }[])
-    .sort((a, b) => {
-      const months = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ];
-      return months.indexOf(a.month) - months.indexOf(b.month);
-    });
-
+  const data = orders.reduce((acc, order) => {
+    const month = getMonth(new Date(order.createdAt));
+    const amount = parseFloat(order.amount);
+    
+    const monthData = acc.find((item) => item.month === month);
+    if (monthData) {
+      monthData.revenue += amount;
+      monthData.mobile += amount;
+    }
+    return acc;
+  }, initialData);
+  
   return data;
 }
