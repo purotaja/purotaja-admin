@@ -178,7 +178,7 @@ model Review {
   rating  Int
   comment String
 
-  Subproduct   Subproduct? @relation(fields: [subproductId], references: [id])
+  subproduct   Subproduct? @relation(fields: [subproductId], references: [id])
   subproductId String?     @db.ObjectId
   clientId     String?     @db.ObjectId
   client       Client?     @relation(fields: [clientId], references: [id], onDelete: Cascade)

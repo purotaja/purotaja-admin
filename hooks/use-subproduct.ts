@@ -18,8 +18,6 @@ export const useSubproduct = (storeId: string): UseSubProductsReturnTypes => {
   const [subproducts, setSubproducts] = useState<SubproductsWithImage[]>([]);
   const [loading, setLoading] = useState(true);
 
-  //create subproduct api
-
   const fetchSubproducts = async () => {
     setLoading(true);
 

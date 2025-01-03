@@ -11,7 +11,6 @@ import {
 import { LucideLoader, Pen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSubCategories } from "@/hooks/use-subcategories";
 import { getUsers } from "@/hooks/get-users";
 import RoleBox from "@/components/RoleBox";
 
