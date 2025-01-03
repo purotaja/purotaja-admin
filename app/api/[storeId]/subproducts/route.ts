@@ -19,6 +19,8 @@ export async function GET(
     const subproducts = await prisma.subproduct.findMany({
       include: {
         image: true,
+        prices: true,
+        review: true,
       },
     });
 

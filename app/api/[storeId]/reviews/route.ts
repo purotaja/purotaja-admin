@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const reviews = await prisma.review.findMany({
-      include: { product: true, client: true },
+      include: { subproduct: true, client: true },
     });
 
     const modifiedData = reviews.map((review) => {
@@ -15,7 +15,7 @@ export async function GET(
         id: review.id,
         rating: review.rating,
         comment: review.comment,
-        product: review.product?.name,
+        subproduct: review.subproduct?.name,
         client: review.client?.email,
       };
     });
