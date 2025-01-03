@@ -21,7 +21,9 @@ interface Props {
 
 const SubproductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
   const pathname = usePathname();
-  const { subproducts, loading } = useSubproduct(pathname.split("/")[1]);
+  const { subproducts, loading, deleteSubproduct } = useSubproduct(
+    pathname.split("/")[1]
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredSubproducts, setFilteredSubproducts] = useState<
@@ -67,12 +69,14 @@ const SubproductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
               <TableRow key={subproduct.id}>
                 <TableHead>{subproduct.id}</TableHead>
                 <TableHead>
-                  {subproduct.image.length > 0 && (
+                  {subproduct.image.length > 0 ? (
                     <img
                       src={subproduct.image[0].url}
                       alt={subproduct.image[0].id}
                       className="w-10 h-10 rounded-md"
                     />
+                  ) : (
+                    "No Image"
                   )}
                 </TableHead>
                 <TableHead>{subproduct.name}</TableHead>
@@ -88,13 +92,13 @@ const SubproductsTable = ({ setOpen, setMode, setInitialData }: Props) => {
                     >
                       <Pen /> Update subproduct
                     </Button>
-                    {/* <Button
+                    <Button
                       variant={"ghost"}
-                      onClick={() => deleteCategory(subproduct.id)}
-                      disabled={isDeleting}
+                      onClick={() => deleteSubproduct(subproduct.id)}
+                      disabled={loading}
                     >
                       <Trash2 /> Delete subproduct
-                    </Button> */}
+                    </Button>
                   </SubMenus>
                 </TableHead>
               </TableRow>

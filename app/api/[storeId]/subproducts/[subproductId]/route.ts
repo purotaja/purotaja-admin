@@ -39,7 +39,17 @@ export async function PATCH(
   req: Request,
   { params }: { params: { storeId: string; subproductId: string } }
 ) {
-  const { name, stock, productId, image } = await req.json();
+  const {
+    name,
+    stock,
+    productId,
+    image,
+    prices,
+    perunitprice,
+    inStock,
+    featured,
+    discount,
+  } = await req.json();
 
   try {
     const subproduct = await prisma.subproduct.findUnique({
@@ -58,23 +68,56 @@ export async function PATCH(
       );
     }
 
+    const calculatedPrices = prices.map((price: string) => {
+      const basePrice = parseFloat(price) * parseFloat(perunitprice);
+      const finalPrice = discount
+        ? basePrice - basePrice * (parseFloat(discount) / 100)
+        : basePrice;
+
+      if (price.includes("2.5")) {
+        return {
+          value: price,
+          label: "250 grams",
+          price: finalPrice.toFixed(2),
+        };
+      } else if (price.includes("5")) {
+        return {
+          value: price,
+          label: "500 grams",
+          price: finalPrice.toFixed(2),
+        };
+      } else if (price.includes("1")) {
+        return {
+          value: price,
+          label: "100 grams",
+          price: finalPrice.toFixed(2),
+        };
+      }
+    });
+
     const updatedSubproduct = await prisma.subproduct.update({
       where: {
         id: params.subproductId,
       },
       data: {
         name,
-        stock,
-        productId,
+        stock: parseInt(stock),
+        perunitprice: parseFloat(perunitprice),
+        prices: calculatedPrices,
+        inStock,
+        featured,
+        discount: parseFloat(discount),
+        product: {
+          connect: {
+            id: productId,
+          },
+        },
         image: image && {
           deleteMany: {},
           createMany: {
             data: image.map((image: { url: string; key: string }) => image),
           },
         },
-      },
-      include: {
-        image: true,
       },
     });
 

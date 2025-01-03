@@ -19,7 +19,6 @@ export async function GET(
     const subproducts = await prisma.subproduct.findMany({
       include: {
         image: true,
-        prices: true,
         review: true,
       },
     });
@@ -38,7 +37,17 @@ export async function POST(
   req: Request,
   { params }: { params: { storeId: string } }
 ) {
-  const { name, stock, productId, image } = await req.json();
+  const {
+    name,
+    stock,
+    perunitprice,
+    prices,
+    discount,
+    productId,
+    image,
+    inStock,
+    featured,
+  } = await req.json();
 
   if (!name) {
     return NextResponse.json(
@@ -61,34 +70,64 @@ export async function POST(
     );
   }
 
+  if (!perunitprice) {
+    return NextResponse.json(
+      { error: "Price is required" },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+
   try {
+    const calculatedPrices = prices.map((price: string) => {
+      const basePrice = parseFloat(price) * parseFloat(perunitprice);
+      const finalPrice = discount
+        ? basePrice - basePrice * (parseFloat(discount) / 100)
+        : basePrice;
+
+      if (price.includes("2.5")) {
+        return {
+          value: price,
+          label: "250 grams",
+          price: finalPrice.toFixed(2),
+        };
+      } else if (price.includes("5")) {
+        return {
+          value: price,
+          label: "500 grams",
+          price: finalPrice.toFixed(2),
+        };
+      } else if (price.includes("1")) {
+        return {
+          value: price,
+          label: "100 grams",
+          price: finalPrice.toFixed(2),
+        };
+      }
+    });
+
     const subproduct = await prisma.subproduct.create({
       data: {
         name,
-        stock,
+        stock: parseInt(stock),
+        perunitprice: parseFloat(perunitprice),
+        prices: calculatedPrices,
+        inStock,
+        featured,
+        discount: parseFloat(discount),
         product: {
           connect: {
             id: productId,
           },
         },
+        image: image && {
+          createMany: {
+            data: image,
+          },
+        },
       },
     });
 
-    const images = image.url
-      ? await prisma.image.create({
-          data: {
-            url: image.url,
-            key: image.key,
-            subproduct: {
-              connect: {
-                id: subproduct.id,
-              },
-            },
-          },
-        })
-      : null;
-
-    if (subproduct && images) {
+    if (subproduct) {
       return NextResponse.json(subproduct, {
         status: 201,
         headers: corsHeaders,

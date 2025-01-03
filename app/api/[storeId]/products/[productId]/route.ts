@@ -34,6 +34,7 @@ export async function GET(
       },
       include: {
         category: true,
+        subproduct: true,
         image: true,
       },
     });

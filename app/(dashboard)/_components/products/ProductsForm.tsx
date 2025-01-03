@@ -110,10 +110,10 @@ const ProductsForm = ({
           image: [],
         },
   });
-
+  
   const handleImageUpload = async (res: ClientUploadedFileData<any>[]) => {
     const image = res;
-
+    
     setUploadedImage((prev) => [
       ...(prev || []),
       ...image.map((img) => ({
@@ -121,7 +121,7 @@ const ProductsForm = ({
         key: img.key,
       })),
     ]);
-
+    
     form.setValue("image", [
       ...form.getValues("image"),
       ...image.map((img) => ({
@@ -129,10 +129,10 @@ const ProductsForm = ({
         key: img.key,
       })),
     ]);
-
+    
     toast.success("Upload Completed");
   };
-
+  
   const handleImageDelete = async (key: string) => {
     setIsLoading(true);
     try {
@@ -167,7 +167,6 @@ const ProductsForm = ({
       setOpen(false);
       fetchProducts();
     }
-    console.log(body);
   };
 
   if (catloading) {
@@ -250,7 +249,7 @@ const ProductsForm = ({
                 ))}
             </div>
           </div>
-
+          
           <div className="flex flex-col space-y-2 md:space-y-4 w-full">
             <div className="flex flex-col md:flex-row md:gap-10 w-full">
               {/* Name Field */}

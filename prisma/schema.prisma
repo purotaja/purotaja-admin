@@ -114,8 +114,8 @@ model Category {
 }
 
 model Product {
-  id   String @id @default(auto()) @map("_id") @db.ObjectId
-  name String
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
   description String
 
   image      Image[]
@@ -128,26 +128,30 @@ model Product {
   updatedAt DateTime @updatedAt
 }
 
-model Price {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  quantity Int
-  price    Float
-  discount Int    @default(0)
+// model Price {
+//   id       String @id @default(auto()) @map("_id") @db.ObjectId
+//   quantity Int
+//   price    Float
+//   discount Int    @default(0)
 
-  subproduct   Subproduct? @relation(fields: [subproductId], references: [id], onDelete: Cascade)
-  subproductId String?     @db.ObjectId
+//   subproduct   Subproduct? @relation(fields: [subproductId], references: [id], onDelete: Cascade)
+//   subproductId String?     @db.ObjectId
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
 
 model Subproduct {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  stock       Int
-  
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  stock        Int
+  perunitprice Float
+  prices       Json[]
+  inStock      Boolean @default(true)
+  featured     Boolean @default(false)
+  discount     Int     @default(0)
+
   image  Image[]
-  prices Price[]
   review Review[]
 
   product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)

@@ -6,6 +6,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,19 +20,39 @@ import { deleteUploadthingFiles } from "@/lib/server/uploadthing";
 import { useCategories } from "@/hooks/use-categories";
 import { usePathname } from "next/navigation";
 import { twMerge } from "tailwind-merge";
+import { useProduct } from "@/hooks/use-products";
+import { SubproductType, useSubproduct } from "@/hooks/use-subproduct";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { Switch } from "@/components/ui/switch";
 
 export const SubcategorySchema = z.object({
   name: z.string(),
-  image: z.object({
-    url: z.string(),
-    key: z.string(),
-  }),
+  stock: z.string(),
+  productId: z.string(),
+  prices: z.array(z.string()),
+  perunitprice: z.string(),
+  inStock: z.boolean(),
+  featured: z.boolean(),
+  discount: z.string(),
+  image: z.array(
+    z.object({
+      url: z.string(),
+      key: z.string(),
+    })
+  ),
 });
 
 interface Props {
   open: boolean;
   mode?: "create" | "edit";
-  initialData?: any;
+  initialData?: SubproductType;
   setInitialData: (data: any) => void;
   setOpen: (open: boolean) => void;
   setMode: (mode: "create" | "edit") => void;
@@ -45,83 +66,135 @@ const SubproductsForm = ({
   setOpen,
   setMode,
 }: Props) => {
-  const [uploadedImage, setUploadedImage] = useState<{
-    url: string;
-    key: string;
-  } | null>(initialData?.image[0] || null);
-  const [loading, setLoading] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<
+    | {
+        url: string;
+        key: string;
+      }[]
+    | null
+  >(initialData?.image || null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const pathname = usePathname();
-  const { categories } = useCategories(pathname.split("/")[1]);
+  const { products } = useProduct({ storeId: pathname.split("/")[1] });
+  const {
+    subproducts,
+    loading,
+    updateSubproduct,
+    createSubproduct,
+    fetchSubproducts,
+  } = useSubproduct(pathname.split("/")[1]);
+
+  const prices = [
+    {
+      id: 1,
+      value: "2.5",
+      label: "250 grams",
+    },
+    {
+      id: 2,
+      value: "5",
+      label: "500 grams",
+    },
+    {
+      id: 3,
+      value: "1",
+      label: "100 grams",
+    },
+  ];
 
   const form = useForm<z.infer<typeof SubcategorySchema>>({
     resolver: zodResolver(SubcategorySchema),
     defaultValues: initialData
       ? {
           name: initialData.name,
-          image: {
-            url: initialData.image[0].url,
-            key: initialData.image[0].key,
-          },
+          stock: initialData.stock.toString(),
+          productId: initialData.productId || "",
+          prices:
+            (initialData.prices &&
+              initialData.prices.map((price: any) => price?.value)) ||
+            [],
+          perunitprice: initialData.perunitprice.toString() || "",
+          discount: initialData.discount.toString() || "",
+          inStock: initialData.inStock,
+          featured: initialData.featured,
+          image: initialData.image
+            ? initialData.image.map((img) => ({
+                url: img.url,
+                key: img.key,
+              }))
+            : [],
         }
       : {
           name: "",
-          image: { url: "", key: "" },
+          stock: "",
+          perunitprice: "",
+          discount: "",
+          productId: "",
+          inStock: true,
+          featured: false,
+          prices: [],
+          image: [],
         },
   });
 
   const handleImageUpload = async (res: ClientUploadedFileData<any>[]) => {
-    console.log("Files: ", res);
-    const image = res[0];
+    const image = res;
 
-    setUploadedImage({
-      url: image.appUrl,
-      key: image.key,
-    });
-    form.setValue("image", {
-      url: image.appUrl,
-      key: image.key,
-    });
+    setUploadedImage((prev) => [
+      ...(prev || []),
+      ...image.map((img) => ({
+        url: img.appUrl,
+        key: img.key,
+      })),
+    ]);
+
+    form.setValue("image", [
+      ...form.getValues("image"),
+      ...image.map((img) => ({
+        url: img.appUrl,
+        key: img.key,
+      })),
+    ]);
 
     toast.success("Upload Completed");
   };
 
-  const handleImageDelete = async () => {
-    setLoading(true);
+  const handleImageDelete = async (key: string) => {
+    setIsLoading(true);
     try {
-      await deleteUploadthingFiles([uploadedImage?.key as string]);
-      setUploadedImage(null);
-      form.setValue("image", { url: "", key: "" });
+      await deleteUploadthingFiles([key as string]);
+      setUploadedImage((prev) => prev?.filter((img) => img.key !== key) || []);
+      form.setValue(
+        "image",
+        form.getValues("image").filter((img) => img.key !== key) || []
+      );
     } catch (error) {
       console.error("Error: ", error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   const onSubmit = async (body: z.infer<typeof SubcategorySchema>) => {
-    setLoading(true);
-    let updatedBody;
-    if (mode !== "create") {
-      updatedBody = {
-        ...body,
-        imageId: initialData.image[0].id,
-      };
-    }
-
     try {
       mode === "create"
-        ? console.log("Create Category: ", body)
-        : console.log("Edit Category: ", updatedBody);
+        ? createSubproduct(body)
+        : initialData && updateSubproduct(initialData.id, body);
 
-      toast.success("Category created successfully");
+      const message =
+        mode === "create"
+          ? "Product created successfully."
+          : "Product updated successfully.";
+      toast.success(message);
     } catch (error) {
       console.log("Error: ", error);
-      toast.error("Failed to create category");
+      toast.error("An error occurred while creating the product.");
     } finally {
-      setLoading(false);
       setOpen(false);
+      fetchSubproducts();
     }
+    console.log(body);
   };
 
   return (
@@ -144,7 +217,7 @@ const SubproductsForm = ({
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="flex flex-col md:flex-row w-full gap-2">
             <FormField
-              name="name"
+              name="image"
               control={form.control}
               render={({ field }) => (
                 <FormItem>
@@ -163,40 +236,201 @@ const SubproductsForm = ({
                 </FormItem>
               )}
             />
-            {uploadedImage && (
-              <div className="relative w-32 object-cover rounded-md group">
-                <img
-                  src={uploadedImage.url}
-                  alt="Category Image"
-                  className="rounded-md"
-                />
-                {!loading ? (
-                  <button
-                    onClick={handleImageDelete}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            <div className="flex gap-4">
+              {uploadedImage &&
+                uploadedImage.map((image, index) => (
+                  <div
+                    className="relative w-32 object-cover rounded-md group"
+                    key={index}
                   >
-                    <X size={16} />
-                  </button>
-                ) : (
-                  <div className="absolute top-1 right-1 bg-primary p-1 text-white rounded-full">
-                    <LucideLoader size={16} className="animate-spin" />
+                    <img
+                      src={image.url}
+                      alt="Product Image"
+                      className="rounded-md"
+                    />
+                    {!isLoading ? (
+                      <button
+                        type="button"
+                        onClick={() => handleImageDelete(image.key)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      >
+                        <X size={16} />
+                      </button>
+                    ) : (
+                      <div className="absolute top-1 right-1 bg-primary p-1 text-white rounded-full">
+                        <LucideLoader size={16} className="animate-spin" />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+                ))}
+            </div>
           </div>
-          <FormField
-            name="name"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+
+          <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 w-full gap-10">
+            <div className="space-y-2 w-full">
+              {/* Name */}
+              <FormField
+                name="name"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              {/* Product */}
+              <FormField
+                name="productId"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Product</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a product" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {products.map(({ id, name, image }, idx) => (
+                          <SelectItem
+                            value={id}
+                            key={idx}
+                            className="capitalize"
+                          >
+                            <div className="flex gap-2 items-center" key={idx}>
+                              {image &&
+                                image
+                                  .slice(0)
+                                  .map((img) => (
+                                    <img
+                                      src={img.url}
+                                      alt={img.key}
+                                      key={img.key}
+                                      className="w-8 h-8 rounded-md"
+                                    />
+                                  ))}
+                              {name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+
+              {/* Quantities */}
+              <FormField
+                name="prices"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Quantities</FormLabel>
+                    <FormControl>
+                      <MultiSelect
+                        options={prices}
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex flex-row gap-10 items-end">
+                {/* In Stock */}
+                <FormField
+                  name="inStock"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>In Stock</FormLabel>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Featured */}
+                <FormField
+                  name="featured"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Featured</FormLabel>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 w-full">
+              {/* Stock */}
+              <FormField
+                name="stock"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Stock</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Price */}
+              <FormField
+                name="perunitprice"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Price</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Discount */}
+              <FormField
+                name="discount"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Discount</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
           <Button type="submit">{mode === "create" ? "Create" : "Edit"}</Button>
         </form>
       </Form>
