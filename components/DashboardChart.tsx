@@ -13,12 +13,12 @@ import {
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import useOrders from "@/hooks/use-orders";
-import { getMonth } from "@/lib/utils";
+import { getMonthlyOrders } from "@/lib/utils";
 
 const chartConfig = {
   revenue: {
     label: "₹ Revenue by Month",
-    color: "#151515",
+    color: "#73549B",
   },
 } satisfies ChartConfig;
 
@@ -36,24 +36,8 @@ export function DashboardChart() {
     initializeDashboard();
   }, [storeId]);
 
-  const chartData = orders.reduce((acc, order) => {
-    const month = getMonth(new Date(order.createdAt));
-    const amount = parseFloat(order.amount);
-
-    const existingMonth = acc.find((item) => item.month === month);
-    if (existingMonth) {
-      existingMonth.revenue += amount;
-      existingMonth.mobile += amount;
-    } else {
-      acc.push({
-        month,
-        revenue: amount,
-        mobile: amount,
-      });
-    }
-    return acc;
-  }, [] as { month: string; revenue: number; mobile: number }[]);
-
+  const chartData = getMonthlyOrders(orders);
+  
   return (
     <ChartContainer config={chartConfig} className="border rounded-lg p-4">
       <BarChart accessibilityLayer data={chartData}>

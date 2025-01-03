@@ -35,7 +35,7 @@ model Client {
   otp     Otp[]
   address Address[]
   orders  Orders[]
-  review    Review[]
+  review  Review[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -93,13 +93,13 @@ model Image {
   url String
   key String
 
-  categoryId    String? @db.ObjectId
-  subcategoryId String? @db.ObjectId
-  productId     String? @db.ObjectId
+  categoryId   String? @db.ObjectId
+  productId    String? @db.ObjectId
+  subproductId String? @db.ObjectId
 
-  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  subcategory Subcategory? @relation(fields: [subcategoryId], references: [id], onDelete: Cascade)
-  product     Product?     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category?   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  product    Product?    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  subproduct Subproduct? @relation(fields: [subproductId], references: [id])
 }
 
 model Category {
@@ -113,30 +113,49 @@ model Category {
   updatedAt DateTime @updatedAt
 }
 
-model Subcategory {
-  id   String @id @default(auto()) @map("_id") @db.ObjectId
-  name String @unique
+model Product {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
 
-  image Image[]
+  image      Image[]
+  subproduct Subproduct[]
+
+  categoryId String   @db.ObjectId
+  category   Category @relation(fields: [categoryId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Product {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  description String
-  price       Float
-  stock       Int
-  discount    Float?
-  image       Image[]
+// model Price {
+//   id       String @id @default(auto()) @map("_id") @db.ObjectId
+//   quantity Int
+//   price    Float
+//   discount Int    @default(0)
 
-  subcategories Json[]
-  review        Review[]
+//   subproduct   Subproduct? @relation(fields: [subproductId], references: [id], onDelete: Cascade)
+//   subproductId String?     @db.ObjectId
 
-  categoryId String   @db.ObjectId
-  category   Category @relation(fields: [categoryId], references: [id])
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+model Subproduct {
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  stock        Int
+  perunitprice Float
+  prices       Json[]
+  inStock      Boolean @default(true)
+  featured     Boolean @default(false)
+  discount     Int     @default(0)
+
+  image  Image[]
+  review Review[]
+
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String?  @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -163,11 +182,10 @@ model Review {
   rating  Int
   comment String
 
-  productId String?  @db.ObjectId
-  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  clientId String? @db.ObjectId
-  client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  subproduct   Subproduct? @relation(fields: [subproductId], references: [id])
+  subproductId String?     @db.ObjectId
+  clientId     String?     @db.ObjectId
+  client       Client?     @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -69,104 +69,104 @@ export async function GET(
   }
 }
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const validatedData = OrderInputSchema.parse(body);
-    const { orders } = validatedData;
+// export async function POST(request: Request) {
+//   try {
+//     const body = await request.json();
+//     const validatedData = OrderInputSchema.parse(body);
+//     const { orders } = validatedData;
 
-    // Fetch all products in one query
-    const productIds = orders.products.map((product) => product.id);
-    const productsFromDB = await prisma.product.findMany({
-      where: {
-        id: {
-          in: productIds,
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        price: true,
-      },
-    });
+//     // Fetch all products in one query
+//     const productIds = orders.products.map((product) => product.id);
+//     const productsFromDB = await prisma.product.findMany({
+//       where: {
+//         id: {
+//           in: productIds,
+//         },
+//       },
+//       select: {
+//         id: true,
+//         name: true,
+//         price: true,
+//       },
+//     });
 
-    // Create a map for quick product lookup
-    const productMap = new Map(
-      productsFromDB.map((product) => [product.id, product])
-    );
+//     // Create a map for quick product lookup
+//     const productMap = new Map(
+//       productsFromDB.map((product) => [product.id, product])
+//     );
 
-    // Calculate products with subtotals
-    let totalAmount = 0;
-    const enrichedProducts = orders.products.map((orderProduct) => {
-      const product = productMap.get(orderProduct.id);
-      if (!product) {
-        throw new Error(`Product not found: ${orderProduct.id}`);
-      }
+//     // Calculate products with subtotals
+//     let totalAmount = 0;
+//     const enrichedProducts = orders.products.map((orderProduct) => {
+//       const product = productMap.get(orderProduct.id);
+//       if (!product) {
+//         throw new Error(`Product not found: ${orderProduct.id}`);
+//       }
 
-      const quantity = parseInt(orderProduct.quantity);
-      const subtotal = product.price * quantity;
-      totalAmount += subtotal;
+//       const quantity = parseInt(orderProduct.quantity);
+//       const subtotal = product.price * quantity;
+//       totalAmount += subtotal;
 
-      return {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: quantity,
-        subtotal: subtotal,
-        subcategory: orderProduct.subcategory || null,
-      };
-    });
+//       return {
+//         id: product.id,
+//         name: product.name,
+//         price: product.price,
+//         quantity: quantity,
+//         subtotal: subtotal,
+//         subcategory: orderProduct.subcategory || null,
+//       };
+//     });
 
-    // Create the order with exact database structure
-    const order = await prisma.orders.create({
-      data: {
-        amount: totalAmount.toString(),
-        products: enrichedProducts,
-        clientId: orders.userId,
-        addressId: orders.addressId,
-      },
-    });
+//     // Create the order with exact database structure
+//     const order = await prisma.orders.create({
+//       data: {
+//         amount: totalAmount.toString(),
+//         products: enrichedProducts,
+//         clientId: orders.userId,
+//         addressId: orders.addressId,
+//       },
+//     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: order,
-      },
-      {
-        status: 201,
-        headers: corsHeaders,
-      }
-    );
-  } catch (error) {
-    console.error("Error creating order:", error);
+//     return NextResponse.json(
+//       {
+//         success: true,
+//         data: order,
+//       },
+//       {
+//         status: 201,
+//         headers: corsHeaders,
+//       }
+//     );
+//   } catch (error) {
+//     console.error("Error creating order:", error);
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid input data",
-          details: error.errors,
-        },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+//     if (error instanceof z.ZodError) {
+//       return NextResponse.json(
+//         {
+//           success: false,
+//           error: "Invalid input data",
+//           details: error.errors,
+//         },
+//         { status: 400, headers: corsHeaders }
+//       );
+//     }
 
-    if (error instanceof Error && error.message.includes("Product not found")) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        { status: 404, headers: corsHeaders }
-      );
-    }
+//     if (error instanceof Error && error.message.includes("Product not found")) {
+//       return NextResponse.json(
+//         {
+//           success: false,
+//           error: error.message,
+//         },
+//         { status: 404, headers: corsHeaders }
+//       );
+//     }
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to create order",
-      },
-      { status: 500, headers: corsHeaders }
-    );
-  }
-}
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         error: "Failed to create order",
+//       },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }

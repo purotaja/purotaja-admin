@@ -8,6 +8,7 @@ import {
 } from "@uploadthing/react";
 
 import type { OurFileRouter } from "@/app/api/uploadthing/core";
+import { Orders } from "@prisma/client";
 
 export const UploadButton = generateUploadButton<OurFileRouter>();
 export const UploadDropzone = generateUploadDropzone<OurFileRouter>();
@@ -28,7 +29,7 @@ export function getDate(date: Date, type?: "date" | "time") {
   } else if (type === "time") {
     return date.toString().split("T")[1].split(".")[0];
   }
-
+  
   return (
     date.toString().split("T")[0] +
     " " +
@@ -39,4 +40,41 @@ export function getDate(date: Date, type?: "date" | "time") {
 export function getMonth(date: Date) {
   const month = date.toLocaleString("default", { month: "long" });
   return month;
+}
+
+export function getMonthlyOrders(orders: Orders[]) {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  
+  const initialData = months.map(month => ({
+    month,
+    revenue: 0,
+    mobile: 0
+  }));
+
+  const data = orders.reduce((acc, order) => {
+    const month = getMonth(new Date(order.createdAt));
+    const amount = parseFloat(order.amount);
+    
+    const monthData = acc.find((item) => item.month === month);
+    if (monthData) {
+      monthData.revenue += amount;
+      monthData.mobile += amount;
+    }
+    return acc;
+  }, initialData);
+  
+  return data;
 }

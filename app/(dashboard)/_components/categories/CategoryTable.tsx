@@ -11,6 +11,7 @@ import {
 import { LucideLoader, Pen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import SubMenus from "@/components/SubMenus";
 
 interface Props {
   setOpen: (open: boolean) => void;
@@ -76,24 +77,25 @@ const CategoryTable = ({ setOpen, setMode, setInitialData }: Props) => {
                 </TableHead>
                 <TableHead>{category.name}</TableHead>
                 <TableHead className="flex items-center gap-2">
-                  <Button
-                    size={"icon"}
-                    onClick={() => {
-                      setMode("edit");
-                      setInitialData(category);
-                      setOpen(true);
-                    }}
-                  >
-                    <Pen />
-                  </Button>
-                  <Button
-                    variant={"destructive"}
-                    size={"icon"}
-                    onClick={() => deleteCategory(category.id)}
-                    disabled={isDeleting}
-                  >
-                    <Trash2 />
-                  </Button>
+                  <SubMenus>
+                    <Button
+                      variant={"ghost"}
+                      onClick={() => {
+                        setMode("edit");
+                        setInitialData(category);
+                        setOpen(true);
+                      }}
+                    >
+                      <Pen /> Update Category
+                    </Button>
+                    <Button
+                      variant={"ghost"}
+                      onClick={() => deleteCategory(category.id)}
+                      disabled={isDeleting}
+                    >
+                      <Trash2 /> Delete Category
+                    </Button>
+                  </SubMenus>
                 </TableHead>
               </TableRow>
             ))}

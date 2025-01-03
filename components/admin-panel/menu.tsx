@@ -67,7 +67,9 @@ export function Menu({ isOpen }: MenuProps) {
                             <Button
                               variant={
                                 (active === undefined &&
-                                  pathname.endsWith("/"+pathname.split("/")[1]+href)) ||
+                                  pathname.endsWith(
+                                    "/" + pathname.split("/")[1] + href
+                                  )) ||
                                 active
                                   ? "secondary"
                                   : "ghost"

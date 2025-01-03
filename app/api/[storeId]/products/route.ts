@@ -28,50 +28,24 @@ export async function GET(
   { params }: { params: { storeId: string } }
 ) {
   try {
-    const { searchParams } = new URL(req.url);
-
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
-    const skip = (page - 1) * limit;
-
-    const categoryId = searchParams.get("categoryId");
-    const subcategoryId = searchParams.get("subcategoryId");
-    const minPrice = searchParams.get("minPrice");
-    const maxPrice = searchParams.get("maxPrice");
-
-    const where: any = {};
-
-    if (categoryId) where.categoryId = categoryId;
-    if (subcategoryId) where.subcategoryId = subcategoryId;
-    if (minPrice || maxPrice) {
-      where.price = {};
-      if (minPrice) where.price.gte = parseFloat(minPrice);
-      if (maxPrice) where.price.lte = parseFloat(maxPrice);
-    }
-
     const products = await prisma.product.findMany({
       include: {
         category: true,
         image: true,
-      }
+        subproduct: true,
+      },
     });
 
-    const total = await prisma.product.count({ where });
-    const afterDiscount = products.map((product) => ({
-      ...product,
-      discounted_price: product.discount
-        ? product.price - (product.price * product.discount) / 100
-        : product.price,
-    }));
+    // const afterDiscount = products.map((product) => ({
+    //   ...product,
+    //   discounted_price: product.discount
+    //     ? product.price - (product.price * product.discount) / 100
+    //     : product.price,
+    // }));
 
     return corsResponse(
       NextResponse.json({
-        products: afterDiscount,
-        pagination: {
-          currentPage: page,
-          totalPages: Math.ceil(total / limit),
-          totalProducts: total,
-        },
+        products: products,
       })
     );
   } catch (error) {
@@ -95,12 +69,6 @@ export async function POST(
       );
     }
 
-    if (!body.price) {
-      return corsResponse(
-        NextResponse.json({ error: "Price is required" }, { status: 400 })
-      );
-    }
-
     if (!body.categoryId) {
       return corsResponse(
         NextResponse.json({ error: "Category ID is required" }, { status: 400 })
@@ -111,9 +79,6 @@ export async function POST(
       data: {
         name: body.name,
         description: body.description,
-        price: body.price,
-        stock: body.stock || 0,
-        discount: body.discount || 0,
         categoryId: body.categoryId,
       },
       include: {

@@ -4,7 +4,6 @@ import { Sidebar } from "@/components/admin-panel/sidebar";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useStore } from "@/hooks/use-stores";
 import { cn } from "@/lib/utils";
-// import Sidebar from "../sidebar";
 
 export default function AdminPanelLayout({
   children,

@@ -9,11 +9,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
-import Subcategory from "../../_components/subcategories/Subcategory";
+import Subproducts from "../../_components/subproducts/Subproducts";
 
 const Page = () => {
   return (
-    <ContentLayout title="Sub Categories">
+    <ContentLayout title="Sub Products">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -23,11 +23,11 @@ const Page = () => {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Sub Categories</BreadcrumbPage>
+            <BreadcrumbPage>Subproducts</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <Subcategory />
+      <Subproducts />
     </ContentLayout>
   );
 };

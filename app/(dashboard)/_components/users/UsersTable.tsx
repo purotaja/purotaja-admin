@@ -11,7 +11,6 @@ import {
 import { LucideLoader, Pen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSubCategories } from "@/hooks/use-subcategories";
 import { getUsers } from "@/hooks/get-users";
 import RoleBox from "@/components/RoleBox";
 
@@ -25,8 +24,6 @@ const UsersTable = () => {
   const { users, isLoading, deleteUser } = getUsers();
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredSubCategories, setFilteredSubCategories] = useState(users);
-
-  console.log(users)
   useEffect(() => {
     setFilteredSubCategories(
       users.filter((user) =>
@@ -59,6 +56,7 @@ const UsersTable = () => {
               <TableHead className="">Name</TableHead>
               <TableHead className="">Email</TableHead>
               <TableHead className="">Role</TableHead>
+              <TableHead className="">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -70,15 +68,22 @@ const UsersTable = () => {
                 <TableHead className="flex flex-col h-full justify-center items-center">
                   <RoleBox id={user.id} user_role={user.role} />
                 </TableHead>
+                <TableHead>
+                  <Button
+                    variant={"destructive"}
+                    size={"icon"}
+                    onClick={() => deleteUser(user.id)}
+                  >
+                    <Trash2 />
+                  </Button>
+                </TableHead>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       ) : (
         <TableBody className="flex items-center justify-center w-full">
-          <h1 className="text-gray-400 mt-5 text-center">
-            No users found.
-          </h1>
+          <h1 className="text-gray-400 mt-5 text-center">No users found.</h1>
         </TableBody>
       )}
     </section>

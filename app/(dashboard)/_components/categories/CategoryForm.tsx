@@ -19,6 +19,7 @@ import { deleteUploadthingFiles } from "@/lib/server/uploadthing";
 import axios from "axios";
 import { useCategories } from "@/hooks/use-categories";
 import { usePathname } from "next/navigation";
+import { twMerge } from "tailwind-merge";
 
 export const CategorySchema = z.object({
   name: z.string(),
@@ -99,7 +100,7 @@ const CategoryForm = ({ mode = "create", initialData, setOpen }: Props) => {
       mode === "create"
         ? createCategory(body)
         : updateCategory(initialData.id, updatedBody!);
-      
+
       toast.success("Category created successfully");
     } catch (error) {
       console.log("Error: ", error);
@@ -123,6 +124,8 @@ const CategoryForm = ({ mode = "create", initialData, setOpen }: Props) => {
                 <FormControl>
                   <UploadDropzone
                     endpoint="imageUploader"
+                    config={{ cn: twMerge }}
+                    className="ut-button:bg-[#73549b] ut-label:text-[#73549b]"
                     onClientUploadComplete={handleImageUpload}
                     onUploadError={(error: Error) => {
                       console.log("Error: ", error);

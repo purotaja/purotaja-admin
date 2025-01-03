@@ -9,6 +9,8 @@ import {
   ShoppingBag,
   BookCopyIcon,
   ShoppingCart,
+  Stars,
+  ShoppingBasket,
 } from "lucide-react";
 
 type Submenu = {
@@ -36,7 +38,7 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: "",
       menus: [
         {
-          href: "/",
+          href: "",
           label: "Dashboard",
           icon: LayoutGrid,
           submenus: [],
@@ -52,19 +54,24 @@ export function getMenuList(pathname: string): Group[] {
           icon: Bookmark,
         },
         {
-          href: "/subcategories",
-          label: "Sub Categories",
-          icon: BookCopyIcon,
-        },
-        {
           href: "/products",
           label: "Products",
           icon: ShoppingCart,
         },
         {
+          href: "/subproducts",
+          label: "Sub Products",
+          icon: ShoppingBasket,
+        },
+        {
           href: "/orders",
           label: "Orders",
           icon: ShoppingBag,
+        },
+        {
+          href: "/reviews",
+          label: "Reviews",
+          icon: Stars,
         },
       ],
     },

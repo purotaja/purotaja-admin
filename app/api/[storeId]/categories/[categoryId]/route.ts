@@ -50,9 +50,10 @@ export async function GET(
       },
       include: {
         image: true,
+        subproduct: true,
       },
     });
-
+    
     data.product = products;
 
     return corsResponse(NextResponse.json({ category: data }, { status: 200 }));
