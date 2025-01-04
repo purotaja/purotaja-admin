@@ -1,5 +1,14 @@
 import { getDate } from "@/lib/utils";
 import React from "react";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface Props {
   datas: {
@@ -19,14 +28,29 @@ const SalesCard = ({ datas }: Props) => {
     );
   }
 
-  return datas.map((data, index) => (
-    <div className="grid grid-cols-8 py-4" key={index}>
-      <div className="col-span-1">{index + 1}.</div>
-      <div className="col-span-3">{getDate(data.createdAt, "date")}</div>
-      <div className="col-span-2">₹ {data.amount}</div>
-      <div className="col-span-1">{data.status}</div>
-    </div>
-  ));
+  return (
+    <Table>
+      <TableCaption>Recent Orders</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Id</TableHead>
+          <TableHead>Order Date</TableHead>
+          <TableHead>Amount</TableHead>
+          <TableHead>Status</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {datas.map((data, index) => (
+          <TableRow key={index}>
+            <TableCell className="font-medium">{index + 1}.</TableCell>
+            <TableCell>{getDate(data.createdAt, "date")}</TableCell>
+            <TableCell>₹ {data.amount}</TableCell>
+            <TableCell>{data.status}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
 };
 
 export default SalesCard;
