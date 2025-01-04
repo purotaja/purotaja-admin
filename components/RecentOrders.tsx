@@ -17,21 +17,21 @@ const RecentOrders = () => {
 
   if (loading) {
     return (
-      <ScrollArea className="flex flex-col border rounded-lg p-4">
+      <div className="flex flex-col border rounded-lg p-4">
         <h1 className="font-semibold">Recent Orders</h1>
         <div className="flex flex-row justify-center items-center py-4 w-full">
           <LucideLoader className="animate-spin w-6 h-6" />
         </div>
-      </ScrollArea>
+      </div>
     );
   }
 
   return (
     <div className="flex flex-col border rounded-lg p-4">
       <h1 className="font-semibold">Recent Orders</h1>
-      <div className="overflow-hidden overflow-y-scroll max-h-96">
+      <ScrollArea className="overflow-hidden overflow-y-scroll max-h-96">
         <SalesCard datas={orders} />
-      </div>
+      </ScrollArea>
     </div>
   );
 };
