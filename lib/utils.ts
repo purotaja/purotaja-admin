@@ -29,7 +29,7 @@ export function getDate(date: Date, type?: "date" | "time") {
   } else if (type === "time") {
     return date.toString().split("T")[1].split(".")[0];
   }
-  
+
   return (
     date.toString().split("T")[0] +
     " " +
@@ -57,24 +57,25 @@ export function getMonthlyOrders(orders: Orders[]) {
     "November",
     "December",
   ];
-  
-  const initialData = months.map(month => ({
+
+  const initialData = months.map((month) => ({
     month,
     revenue: 0,
-    mobile: 0
+    mobile: 0,
   }));
 
   const data = orders.reduce((acc, order) => {
     const month = getMonth(new Date(order.createdAt));
     const amount = parseFloat(order.amount);
-    
-    const monthData = acc.find((item) => item.month === month);
+    const isComplete = order.status === "DELIVERED";
+
+    const monthData = acc.find((item) => item.month === month && isComplete);
     if (monthData) {
       monthData.revenue += amount;
       monthData.mobile += amount;
     }
     return acc;
   }, initialData);
-  
+
   return data;
 }
