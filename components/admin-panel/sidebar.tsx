@@ -4,6 +4,7 @@ import { Menu } from "@/components/admin-panel/menu";
 import { SidebarToggle } from "@/components/admin-panel/sidebar-toggle";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/hooks/use-sidebar";
+import { useStores } from "@/hooks/use-store";
 import { useStore } from "@/hooks/use-stores";
 import { cn } from "@/lib/utils";
 import { PanelsTopLeft } from "lucide-react";
@@ -12,6 +13,8 @@ import Link from "next/link";
 
 export function Sidebar() {
   const sidebar = useStore(useSidebar, (x) => x);
+
+  const { stores } = useStores();
 
   if (!sidebar) return null;
 
@@ -39,13 +42,11 @@ export function Sidebar() {
           variant="link"
           asChild
         >
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Image 
-              src="/logo.png"
-              alt="Purotaja Logo"
-              width={60}
-              height={60}
-            />
+          <Link
+            href={`/${stores[0]?.value}`}
+            className="flex items-center gap-2"
+          >
+            <Image src="/logo.png" alt="Purotaja Logo" width={60} height={60} />
           </Link>
         </Button>
         <Menu isOpen={getOpenState()} />

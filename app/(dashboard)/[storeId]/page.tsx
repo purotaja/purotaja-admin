@@ -12,7 +12,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <ContentLayout title="Dashboard">
+    <ContentLayout title="Admin Panel">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

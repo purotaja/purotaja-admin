@@ -34,7 +34,11 @@ const FormSchema = z.object({
   }),
 });
 
-const ProfileBox = () => {
+interface ProfileBoxProps {
+  isOpen: boolean | undefined;
+}
+
+const ProfileBox = ({ isOpen }: ProfileBoxProps) => {
   const { isLoading, error, stores } = useStores();
   const { user } = useUser();
   const pathname = usePathname();
@@ -91,10 +95,20 @@ const ProfileBox = () => {
                       {field.value ? (
                         <div className="flex gap-2 items-center">
                           <Store />
-                          {
-                            stores.find((store) => store.value === field.value)
-                              ?.label
-                          }
+                          <p
+                            className={cn(
+                              "max-w-[200px] truncate",
+                              isOpen === false
+                                ? "-translate-x-96 opacity-0"
+                                : "translate-x-0 opacity-100"
+                            )}
+                          >
+                            {
+                              stores.find(
+                                (store) => store.value === field.value
+                              )?.label
+                            }
+                          </p>
                         </div>
                       ) : (
                         <div className="flex gap-2 items-center">
