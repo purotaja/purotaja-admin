@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 
 export const SubcategorySchema = z.object({
   name: z.string(),
@@ -236,17 +238,17 @@ const SubproductsForm = ({
                 </FormItem>
               )}
             />
-            <div className="flex gap-4">
+            <div className=" flex flex-row flex-wrap gap-4 md:pt-8">
               {uploadedImage &&
                 uploadedImage.map((image, index) => (
                   <div
-                    className="relative w-32 object-cover rounded-md group"
+                    className="relative object-cover rounded-md group"
                     key={index}
                   >
                     <img
                       src={image.url}
                       alt="Product Image"
-                      className="rounded-md"
+                      className="rounded-md h-36"
                     />
                     {!isLoading ? (
                       <button
@@ -266,8 +268,8 @@ const SubproductsForm = ({
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 w-full gap-10">
-            <div className="space-y-2 w-full">
+          <div className="flex flex-col space-y-2 md:space-y-0 w-full">
+            <div className="flex flex-col md:flex-row w-full md:gap-10">
               {/* Name */}
               <FormField
                 name="name"
@@ -275,12 +277,14 @@ const SubproductsForm = ({
                 render={({ field }) => (
                   <FormItem className="w-full">
                     <FormLabel>Name</FormLabel>
+                    <FormDescription>Enter name of product</FormDescription>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
                   </FormItem>
                 )}
               />
+
               {/* Product */}
               <FormField
                 name="productId"
@@ -288,6 +292,7 @@ const SubproductsForm = ({
                 render={({ field }) => (
                   <FormItem className="w-full">
                     <FormLabel>Product</FormLabel>
+                    <FormDescription>Select a product</FormDescription>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -333,6 +338,7 @@ const SubproductsForm = ({
                 render={({ field }) => (
                   <FormItem className="w-full">
                     <FormLabel>Quantities</FormLabel>
+                    <FormDescription>Select quantities</FormDescription>
                     <FormControl>
                       <MultiSelect
                         options={prices}
@@ -344,46 +350,9 @@ const SubproductsForm = ({
                   </FormItem>
                 )}
               />
-
-              <div className="flex flex-row gap-10 items-end">
-                {/* In Stock */}
-                <FormField
-                  name="inStock"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>In Stock</FormLabel>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Featured */}
-                <FormField
-                  name="featured"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Featured</FormLabel>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
             </div>
 
-            <div className="space-y-2 w-full">
+            <div className="flex flex-col md:flex-row w-full md:gap-10">
               {/* Stock */}
               <FormField
                 name="stock"
@@ -391,6 +360,9 @@ const SubproductsForm = ({
                 render={({ field }) => (
                   <FormItem className="w-full">
                     <FormLabel>Stock</FormLabel>
+                    <FormDescription>
+                      Enter stock count in grams
+                    </FormDescription>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -406,6 +378,7 @@ const SubproductsForm = ({
                 render={({ field }) => (
                   <FormItem className="w-full">
                     <FormLabel>Price</FormLabel>
+                    <FormDescription>Enter price per 100 grams</FormDescription>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -421,6 +394,7 @@ const SubproductsForm = ({
                 render={({ field }) => (
                   <FormItem className="w-full">
                     <FormLabel>Discount</FormLabel>
+                    <FormDescription>Enter discount percentage</FormDescription>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -429,6 +403,67 @@ const SubproductsForm = ({
                 )}
               />
             </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row w-full space-y-2 md:space-y-0 md:gap-10">
+            {/* Description */}
+            <FormField
+              name="name"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className="flex flex-col md:w-[500px]">
+                  <FormLabel>Description</FormLabel>
+                  <FormDescription>
+                    Enter description of product
+                  </FormDescription>
+                  <FormControl>
+                    <Textarea {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* In Stock */}
+            <FormField
+              name="inStock"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className="flex flex-col border rounded-md p-4">
+                  <FormLabel>In Stock</FormLabel>
+                  <FormDescription>
+                    Toggle if the product is in stock
+                  </FormDescription>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Featured */}
+            <FormField
+              name="featured"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className="flex flex-col border rounded-md p-4">
+                  <FormLabel>Featured</FormLabel>
+                  <FormDescription>
+                    Toggle if the product should be featured
+                  </FormDescription>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
           </div>
 
           <Button type="submit">{mode === "create" ? "Create" : "Edit"}</Button>
