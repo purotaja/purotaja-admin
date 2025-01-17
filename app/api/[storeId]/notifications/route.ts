@@ -1,15 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { pusher } from "@/lib/pusher";
 import { NextResponse } from "next/server";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
-}
 
 export async function GET(
   req: Request,
@@ -21,27 +12,22 @@ export async function GET(
     });
 
     if (!store) {
-      return NextResponse.json(
-        { error: "Store not found" },
-        { status: 404, headers: corsHeaders }
-      );
+      return NextResponse.json({ message: "Store not found" });
     }
 
     const notifications = await prisma.notification.findMany({
-      where: { storeId: store.id },
-      orderBy: { createdAt: "desc" },
+      where: {
+        storeId: store.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
-    return NextResponse.json(
-      { notifications },
-      { headers: corsHeaders, status: 200 }
-    );
+    return NextResponse.json(notifications);
   } catch (error) {
-    console.log(error);
-    return NextResponse.json(
-      { error: "Failed to fetch notifications" },
-      { status: 500, headers: corsHeaders }
-    );
+    console.error("Error fetching notifications:", error);
+    return NextResponse.json({ message: "Error fetching notifications" });
   }
 }
 
@@ -49,36 +35,29 @@ export async function POST(
   req: Request,
   { params }: { params: { storeId: string } }
 ) {
-  const { message } = await req.json();
-
   try {
+    const { message } = await req.json();
+
     const store = await prisma.store.findUnique({
       where: { value: params.storeId },
     });
 
     if (!store) {
-      return NextResponse.json(
-        { error: "Store not found" },
-        { status: 404, headers: corsHeaders }
-      );
+      return NextResponse.json({ message: "Store not found" });
     }
 
     const notification = await prisma.notification.create({
       data: {
-        storeId: store.id,
         message: message,
+        storeId: store?.id,
       },
     });
-    
-    return NextResponse.json(
-      { notification },
-      { headers: corsHeaders, status: 200 }
-    );
+
+    await pusher.trigger(`user-${store.id}`, "notification", notification);
+
+    return NextResponse.json(notification);
   } catch (error) {
-    console.log(error);
-    return NextResponse.json(
-      { error: "Failed to create notification" },
-      { status: 500, headers: corsHeaders }
-    );
+    console.error("Error creating notification:", error);
+    return NextResponse.json({ message: "Error creating notification" });
   }
 }

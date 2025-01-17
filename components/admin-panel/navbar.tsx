@@ -1,7 +1,6 @@
-import { UserNav } from "@/components/admin-panel/user-nav";
 import { SheetMenu } from "@/components/admin-panel/sheet-menu";
 import { UserButton } from "@clerk/nextjs";
-import NotificationBell from "../NotificationBell";
+import { NotificationBell } from "../Bell";
 
 interface NavbarProps {
   title: string;

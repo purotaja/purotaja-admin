@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import AdminPanelLayout from "@/components/admin-panel/admin-panel-layout";
 import { getUsers } from "@/hooks/get-users";
 import { useUser } from "@clerk/nextjs";
+import { NotificationProvider } from "@/components/NotificationProvider";
 
 const Layout = ({
   children,
@@ -29,7 +30,17 @@ const Layout = ({
     }
   }, [isLoading, stores, isAdmin, router, isUserLoaded]);
 
-  return <AdminPanelLayout>{children}</AdminPanelLayout>;
+  if (isLoading || !isUserLoaded) {
+    return null;
+  }
+
+  return (
+    <AdminPanelLayout>
+      <NotificationProvider storeId={stores[0].value}>
+        {children}
+      </NotificationProvider>
+    </AdminPanelLayout>
+  );
 };
 
 export default Layout;
