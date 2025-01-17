@@ -96,6 +96,8 @@ export default function NotificationBell() {
       const { notifications: fetchedNotifications } = await getNotifications(
         storeId
       );
+      
+      console.log("Fetched notifications:", fetchedNotifications);
       setNotifications(fetchedNotifications);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
@@ -105,7 +107,7 @@ export default function NotificationBell() {
   const handleMarkAsRead = (id: string) => {
     startTransition(async () => {
       try {
-        const { notification } = await markNotificationAsRead(id);
+        await markNotificationAsRead(id);
         setNotifications((prev) =>
           prev.map((n) => (n.id === id ? { ...n, read: true } : n))
         );
@@ -145,12 +147,8 @@ export default function NotificationBell() {
     const channel = pusherClient.subscribe(channelName);
     pusherRef.current = channel;
 
-    // Debug log for subscription
-    console.log(`Subscribed to Pusher channel: ${channelName}`);
-
     // Bind new notification event
     channel.bind("new-notification", (notification: Notification) => {
-      console.log("Received new notification:", notification);
       setNotifications((prev) => {
         // Check if notification already exists
         const exists = prev.some((n) => n.id === notification.id);
@@ -183,7 +181,7 @@ export default function NotificationBell() {
         )
       );
     });
-    
+
     // Request notification permission
     if (typeof window !== "undefined" && "Notification" in window) {
       Notification.requestPermission();
