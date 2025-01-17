@@ -83,9 +83,10 @@ model Store {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
   label String @unique
   value String @unique
+  notification Notification[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 }
 
 model Image {
@@ -127,19 +128,6 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
-// model Price {
-//   id       String @id @default(auto()) @map("_id") @db.ObjectId
-//   quantity Int
-//   price    Float
-//   discount Int    @default(0)
-
-//   subproduct   Subproduct? @relation(fields: [subproductId], references: [id], onDelete: Cascade)
-//   subproductId String?     @db.ObjectId
-
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-// }
 
 model Subproduct {
   id           String  @id @default(auto()) @map("_id") @db.ObjectId
@@ -188,5 +176,17 @@ model Review {
   client       Client?     @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  storeId String @db.ObjectId
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
   updatedAt DateTime @updatedAt
 }
